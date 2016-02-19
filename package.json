@@ -1,0 +1,18 @@
+{
+  "name": "wcn-ipfs",
+  "version": "1.0.0",
+  "description": "WCN IPFS Archive",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@repo.raincloud.ch:m0se/wcn-ipfs.git"
+  },
+  "keywords": [
+    "ipfs"
+  ],
+  "author": "Mose Last <m0se@raincloud.ch>",
+  "license": "GPL-3.0"
+}

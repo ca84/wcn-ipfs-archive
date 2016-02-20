@@ -35,21 +35,21 @@
 		</script>
 
 		<script id="layout-home" type="text/x-handlebars-template">
+
+		<div id="home_view">
 			<div class="cont_row">dwfdsf</div>
 
 			<div class="cont_row">
 				<h3 class="cont_row_label">Recent Shows:</h3>
-			{{#video}}
-				<div class="ccont_row_slot"><img height="100" src="images/thumb.png"><p>{{title}}</p></div>
-			{{/video}}
+			
 			</div>
 
 			<div class="cont_row">clvfvfvevffe f erferf</div>
-
+		</div>
 		</script>
 
 		<script id="layout-video" type="text/x-handlebars-template">
-
+		<div id="video_list_view">
 			<div class="cont_row col-1-2" style="height:80px">
 				<h3 class="cont_row_label">Find:</h3>
 				<div class="cont_block">
@@ -83,9 +83,13 @@
 
 				<h3 class="cont_row_label">Result:</h3>
 				{{#video}}
-				<div class="resut_list_entry">
-					<img height="100" src="images/thumb.png">
-					<div class="resut_list_entry_text">{{title}}</div>
+				<div class="resut_list_entry"><a href="#/play?{{hash}}">
+					<img height="100" src="images/thumb.png"></a>
+					<div class="resut_list_entry_text"><h2><a href="#/info?{{hash}}">{{title}}</a></h2>
+						<p>{{video_file}}</p>
+						<p>{{youtube_meta}}</p>
+						<div class="resut_list_entry_date">{{formatDate Date}}</div>
+					</div>
 
 				</div>
 				{{/video}}	
@@ -96,20 +100,21 @@
 				{{#video}}
 					<div class="cont_row_slot"><img height="100" src="images/thumb.png"><p>{{title}}</p></div>
 				{{/video}}	
+				<h3 class="cont_row_label">Add Item to Collection:</h3>
+					
+				<input type="text"></input>
+
 			</div>
 
 			<div class="cont_row col-1-1">
 
 				<h3 class="cont_row_label">Add Item to Collection:</h3>
 					
-				<br />
-				<br />
-				<br />bla bla 
 				<input type="text"></input>
 
 			</div>
 
-		
+		</div>
 
 		</script>
 
@@ -122,12 +127,12 @@
 		</aside> 
 		<div class="main_content">
 
-		<img src="images/ipfs.png" style="
+		<img src="images/ipfs.png" id="ipfs_logo" style="
 			    height: 40px;
 			    position: absolute;
 			    left: 90%;
 			    top: 20px;
-			    opacity: 0.5;">
+			    opacity: 0.111;">
 
 			
 <br />		<div id="the_content" class="the_content grid">

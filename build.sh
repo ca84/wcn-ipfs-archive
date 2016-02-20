@@ -7,4 +7,4 @@ cp -r images dist/app/
 cp ipfsapi.min.js dist/app/
 node_modules/.bin/browserify page.js -d -o dist/app/bundle.js
 
-ipfs add -r dist
+ipfs add -r dist |grep -v "dist/"

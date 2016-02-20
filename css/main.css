@@ -10,7 +10,14 @@ body {
     overflow: hidden;
     position: relative;
 }
+h2 {
+    margin-top: 0px;
+    width: 100%
+}
 
+a{
+    text-decoration: none;
+}
 .main_content {
     top: 0;
     bottom: 0;
@@ -185,6 +192,12 @@ body {
 .resut_list_entry_text{
     padding: 4px 16px;
     width: 550px;
+    display: inline;
+}
+
+.resut_list_entry_date{
+    display: inline-block;
+    align-self: flex-end;
 }
 .cont_row_slot{
     padding: 7px;

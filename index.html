@@ -1,0 +1,145 @@
+<html>
+	<head>
+		<title>Tesch</title>
+		<link rel="stylesheet" href="css/font-awesome.min.css">
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<script src="ipfsapi.min.js"></script>
+		<script src="bundle.js"></script>
+
+		<script id="nav-list-content" type="text/x-handlebars-template">
+			<h3 class="side_nav">Collection</h3>
+			<ul class="nav_entry">
+			
+
+			{{#collections}}
+					<li><a class="nav_link" href="../{{hash}}">{{name}}</a> </li>
+			{{/collections}}
+			
+			</ul>
+			<h3 class="side_nav">Contribute</h3>
+			<ul class="nav_entry">
+			{{#nodes}}
+				<li style="padding-left: 8;"><a class="nav_link" href="../{{id}}">{{name}}</a> </li>
+			{{/nodes}}
+			</ul>
+
+		</script>
+
+
+		<script id="file-list-content" type="text/x-handlebars-template">
+			{{#objlist}}
+				{{#Links}}
+				<div class="folder_entry"><i class="fa fa-folder-o"></i> {{Name}}</div>
+				{{/Links}}
+			{{/objlist}}
+		</script>
+
+		<script id="layout-home" type="text/x-handlebars-template">
+			<div class="cont_row">dwfdsf</div>
+
+			<div class="cont_row">
+				<h3 class="cont_row_label">Recent Shows:</h3>
+			{{#video}}
+				<div class="ccont_row_slot"><img height="100" src="images/thumb.png"><p>{{title}}</p></div>
+			{{/video}}
+			</div>
+
+			<div class="cont_row">clvfvfvevffe f erferf</div>
+
+		</script>
+
+		<script id="layout-video" type="text/x-handlebars-template">
+
+			<div class="cont_row col-1-2" style="height:80px">
+				<h3 class="cont_row_label">Find:</h3>
+				<div class="cont_block">
+					<input id="searchbar" type="text"></input>
+					
+				</div>
+			</div>
+
+			<div class="cont_row col-1-2" style="height:80px">
+				<h3 class="cont_row_label">Shows:</h3>
+				<div style="padding-left:110px;"></div>
+				<div class="cont_block" style="margin-top: -15;">
+					<p style="line-height: 1.8;">
+						<span class="list_item">Dark News</span>
+						<span class="list_item">Lala News</span>
+						<span class="list_item">Bitcoin News</span>
+						<span class="list_item">Dadederk News</span>
+						<span class="list_item">Lala News</span>
+						<span class="list_item">Bde itcoin frfr</span>
+						<span class="list_item">Dark News</span>
+						<span class="list_item">Lala News</span>
+						<span class="list_item">Bitco Eews</span>
+						<span class="list_item">Bde itcoin frfr</span>
+						<span class="list_item">Dark News</span>
+						<span class="list_item">Lala News</span>
+					</p>
+				</div>
+			</div>
+		
+			<div class="cont_row col-2-3" style="display: inline;height:60%">
+
+				<h3 class="cont_row_label">Result:</h3>
+				{{#video}}
+				<div class="resut_list_entry">
+					<img height="100" src="images/thumb.png">
+					<div class="resut_list_entry_text">{{title}}</div>
+
+				</div>
+				{{/video}}	
+
+			</div>
+			<div class="cont_row col-1-3">
+				<h3 class="cont_row_label">Recently Added:</h3>
+				{{#video}}
+					<div class="cont_row_slot"><img height="100" src="images/thumb.png"><p>{{title}}</p></div>
+				{{/video}}	
+			</div>
+
+			<div class="cont_row col-1-1">
+
+				<h3 class="cont_row_label">Add Item to Collection:</h3>
+					
+				<br />
+				<br />
+				<br />bla bla 
+				<input type="text"></input>
+
+			</div>
+
+		
+
+		</script>
+
+	</head>
+	<body>
+		<aside class="nav_content">
+		<header class="header"><div class="header_box">
+			<div class="haed_line"><img src="images/wcna.png"></div><!--div class="haed_line">Ueeeii</div/--></div></header>
+		<div class="nav_list"></div>
+		</aside> 
+		<div class="main_content">
+
+		<img src="images/ipfs.png" style="
+			    height: 40px;
+			    position: absolute;
+			    left: 90%;
+			    top: 20px;
+			    opacity: 0.5;">
+
+			
+<br />		<div id="the_content" class="the_content grid">
+
+
+<i class="fa fa-folder-o"></i>
+
+			</div>
+
+
+
+	</body>
+
+
+</html>

@@ -18,9 +18,10 @@ exports.ipfs_id= function(){return _ipfs_id};
 exports.ipfs_api= function(){return _ipfs_api};
 exports.ipfs_index_data= function(){return _ipfs_index_data};
 
-exports.init= function(root_hash){
+exports.init= function(root_hash,n){
 
 	_new_root=root_hash;
+	_base_url="/"+ n +"/";
 
 	ipfs.id().then(function(x){
 		_ipfs_id=x;
@@ -35,7 +36,7 @@ exports.init= function(root_hash){
 	}).catch(function(x){
 		//console.log(x)
 		q=$.ajax({
-		url: "/ipfs/" + root_hash + "/.index.json",
+		url: _base_url + root_hash + "/.index.json",
 		dataType: "json"})
 	.then(function(r,e){
 		//console.log(r,e);

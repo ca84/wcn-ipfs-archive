@@ -7,6 +7,7 @@
 		<script src="bundle.js"></script>
 
 		<script id="nav-list-content" type="text/x-handlebars-template">
+			<div id="nav_list_content">
 			<h3 class="side_nav">Collection</h3>
 			<ul class="nav_entry">
 			
@@ -22,17 +23,9 @@
 				<li style="padding-left: 8;"><a class="nav_link" href="../{{id}}">{{name}}</a> </li>
 			{{/nodes}}
 			</ul>
-
+			</div>
 		</script>
 
-
-		<script id="file-list-content" type="text/x-handlebars-template">
-			{{#objlist}}
-				{{#Links}}
-				<div class="folder_entry"><i class="fa fa-folder-o"></i> {{Name}}</div>
-				{{/Links}}
-			{{/objlist}}
-		</script>
 
 		<script id="layout-home" type="text/x-handlebars-template">
 
@@ -47,6 +40,18 @@
 			<div class="cont_row">clvfvfvevffe f erferf</div>
 		</div>
 		</script>
+
+
+		<script id="layout-video-info" type="text/x-handlebars-template">
+		<div id="video_info_view">
+			<div class="cont_row col-1-1">
+				<h3 class="cont_row_label">Lala:</h3>
+			</div>
+
+		</div>
+		</script>
+
+
 
 		<script id="layout-video" type="text/x-handlebars-template">
 		<div id="video_list_view">
@@ -83,9 +88,9 @@
 
 				<h3 class="cont_row_label">Result:</h3>
 				{{#video}}
-				<div class="resut_list_entry"><a href="#/play?{{hash}}">
+				<div class="resut_list_entry"><a href="#/play/{{hash}}">
 					<img height="100" src="images/thumb.png"></a>
-					<div class="resut_list_entry_text"><h2><a href="#/info?{{hash}}">{{title}}</a></h2>
+					<div class="resut_list_entry_text"><h2><a href="#/info/{{hash}}">{{title}}</a></h2>
 						<p>{{video_file}}</p>
 						<p>{{youtube_meta}}</p>
 						<div class="resut_list_entry_date">{{formatDate Date}}</div>
@@ -123,7 +128,7 @@
 		<aside class="nav_content">
 		<header class="header"><div class="header_box">
 			<div class="haed_line"><img src="images/wcna.png"></div><!--div class="haed_line">Ueeeii</div/--></div></header>
-		<div class="nav_list"></div>
+		<div id="the_nav" class="nav_list"></div>
 		</aside> 
 		<div class="main_content">
 

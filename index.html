@@ -37,7 +37,9 @@
 			
 			</div>
 
-			<div class="cont_row">clvfvfvevffe f erferf</div>
+			<div class="cont_row">clvfvfvevffe f
+			<i class="fa fa-folder-o"></i>
+			 erferf</div>
 		</div>
 		</script>
 
@@ -45,7 +47,11 @@
 		<script id="layout-video-info" type="text/x-handlebars-template">
 		<div id="video_info_view">
 			<div class="cont_row col-1-1">
-				<h3 class="cont_row_label">Lala:</h3>
+				<h3 class="cont_row_label">{{title}}</h3>
+				<video class="info" controls>
+				  <source src="/ipfs/{{video_file}}" type="video/mp4">
+				  Your browser does not support the video tag.
+				</video>
 			</div>
 
 		</div>
@@ -93,7 +99,7 @@
 					<div class="resut_list_entry_text"><h2><a href="#/info/{{hash}}">{{title}}</a></h2>
 						<p>{{video_file}}</p>
 						<p>{{youtube_meta}}</p>
-						<div class="resut_list_entry_date">{{formatDate Date}}</div>
+						<div class="resut_list_entry_date">{{formatDate date}}</div>
 					</div>
 
 				</div>
@@ -143,7 +149,6 @@
 <br />		<div id="the_content" class="the_content grid">
 
 
-<i class="fa fa-folder-o"></i>
 
 			</div>
 

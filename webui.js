@@ -38,7 +38,6 @@ exports.view= {
 }
 
 exports.view_video= {
-
 	template_id: "layout-video",
 	target_id: "the_content",
 	container_id: "video_list_view",
@@ -48,14 +47,14 @@ exports.view_video= {
 
 	get_data: function(){
 		prepare_vidlist=function(s){return {
-			Date: new Date(s.Name.substr(0,4),s.Name.substr(4,2),s.Name.substr(6,2)),
+			date: new Date(s.Name.substr(0,4),parseInt(s.Name.substr(4,2))+1,s.Name.substr(6,2)),
 				title:s.Name.substr(9),
 				hash:s.Id,
-				video_file:s.sub.find(function(i){return i.Name.endsWith(".md")}).Id,
-				youtube_meta:s.sub.find(function(i){return i.Name.endsWith("YoutubeInfo.json")}).Id}
+				video_file:s.sub.filter(function(i){return i.Name.endsWith(".md")})[0].Id,
+				youtube_meta:s.sub.filter(function(i){return i.Name.endsWith("YoutubeInfo.json")})[0].Id}
 			};
 
-		var vids=window.ipfswebtools.tree_root().sub.find(function(i){return i.Name=="video"})
+		var vids=window.ipfswebtools.tree_root().sub.filter(function(i){return i.Name=="video"})[0]
 		var data=[]
 		
 		vids.sub.forEach(function(x){data.push(prepare_vidlist(x))});
@@ -65,7 +64,7 @@ exports.view_video= {
 }
 
 exports.view_video_info= {
-
+	video_id: undefined,
 	template_id: "layout-video-info",
 	target_id: "the_content",
 	container_id: "video_info_view",
@@ -74,8 +73,19 @@ exports.view_video_info= {
 	template: undefined,
 
 	get_data: function(){
+		if(this.video_id){
+			var vids=window.ipfswebtools.tree_root().sub.filter(function(i){return i.Name=="video"})[0];
+			var vid=vids.sub.filter(function(i){return i.Id==window.webui.view_video_info.video_id})[0];
 
-		return {};
+			return {id:this.video_id,
+				video_file:vid.sub.filter(function(i){return i.Name.endsWith(".mp4")})[0].Id,
+				date: new Date(vid.Name.substr(0,4),parseInt(vid.Name.substr(4,2))+1,vid.Name.substr(6,2)),
+				title:vid.Name.substr(9)
+
+			};
+		}else{
+			return {title:"empty"}
+		}
 	}
 }
 

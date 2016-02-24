@@ -7,4 +7,6 @@ cp -r images dist/app/
 cp ipfsapi.min.js dist/app/
 node_modules/.bin/browserify page.js -d -o dist/app/bundle.js
 
-ipfs add -r dist |grep -v "dist/"
+nhash=`ipfs add -r dist/app|tail -1|awk '{print $2}'`;cat dist.tmpl |sed "s/NEW_APP_HASH/$nhash/g"|ipfs object put
+
+#ipfs add -r dist |grep -v "dist/"

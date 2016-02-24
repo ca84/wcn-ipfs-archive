@@ -55,8 +55,9 @@ var nav_video = function(){
 }
 
 var nav_video_info = function(id){
-	console.log("show info for",id); 
+	console.log("show info for",id);
 	if(window.ipfswebtools.isReady()){
+		window.webui.view_video_info.video_id=id;
 		window.webui.view.set_view("layout-video-info");
 	}else{
 		setTimeout(nav_video_info,20);

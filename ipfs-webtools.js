@@ -23,40 +23,53 @@ exports.init= function(root_hash,n){
 	_new_root=root_hash;
 	_base_url="/"+ n +"/";
 
-	ipfs.id().then(function(x){
-		_ipfs_id=x;
-		_ipfs_api=true;
-		exports.update_collection_index(root_hash).then(function(r){
-			_new_root=r.Hash;
+	if(window.location.host=="localhost:8080"){
+
+		ipfs.id().then(function(x){
+			_ipfs_id=x;
+			_ipfs_api=true;
+			exports.update_collection_index(root_hash).then(function(r){
+				_new_root=r.Hash;
+				exports.build_folder_tree();
+				$('#ipfs_logo').css({"opacity":"1"});
+				_ready=true;
+			})
+
+		}).catch(function(x){
+			//console.log(x)
+			q=$.ajax({
+			url: _base_url + root_hash + "/.index.json",
+			dataType: "json"})
+		.then(function(r,e){
+			//console.log(r,e);
+			_ipfs_index_data=r;
 			exports.build_folder_tree();
-			$('#ipfs_logo').css({"opacity":"1"});
+			$('#ipfs_logo').css({"opacity":"0.3"});
 			_ready=true;
-		})
+		});
 
-	}).catch(function(x){
-		//console.log(x)
+		});
+	}else{
+
 		q=$.ajax({
-		url: _base_url + root_hash + "/.index.json",
-		dataType: "json"})
-	.then(function(r,e){
-		//console.log(r,e);
-		_ipfs_index_data=r;
-		exports.build_folder_tree();
-		$('#ipfs_logo').css({"opacity":"0.3"});
-		_ready=true;
-	});
+			url: _base_url + root_hash + "/.index.json",
+			dataType: "json"})
+		.then(function(r,e){
+			//console.log(r,e);
+			_ipfs_index_data=r;
+			exports.build_folder_tree();
+			$('#ipfs_logo').css({"opacity":"0.3"});
+			_ready=true;
+		});
 
-		
-
-
-	});	
+	}	
 
 }
 
 
 exports.build_folder_tree= function(){
 	_tree_root={Id:"root",Name:"root",sub:[]}
-	root_node=_ipfs_index_data.find(function(o){return o.Root;})
+	root_node=window.ipfswebtools.ipfs_index_data().filter(function(o){return o.Root;})[0];
 	
 	dive(root_node,_tree_root);
 			
@@ -65,7 +78,7 @@ exports.build_folder_tree= function(){
 		if(or.Links.length > 0 && or.Data == '\b\u0001'){
 		or.Links.forEach(function(l){
 			var n = {Id:l.Hash,Name:l.Name,sub:[]}
-			leave=_ipfs_index_data.find(function(o){return (o.Id==n.Id);})
+			leave=window.ipfswebtools.ipfs_index_data().filter(function(o){return (o.Id==n.Id);})[0];
 			if(leave){
 				//console.log("LLLL1111: ",leave);
 				dive(leave,n);
@@ -110,9 +123,11 @@ function index_for_hash(hash, root){
 						if(!root)r.Id = h;
 						r.Root = root;
 						res.push(r);
-						for(i=0;i<r.Links.length;i++){
-							//console.log("push");
-							prom.push(build_index(r.Links[i].Hash,false));
+						if(r.Data!=null){
+							for(i=0;i<r.Links.length;i++){
+								//console.log("push");
+								prom.push(build_index(r.Links[i].Hash,false));
+							}
 						}
 					}
 				})

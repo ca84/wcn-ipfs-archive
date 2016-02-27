@@ -3,6 +3,7 @@ window.Handlebars = require('handlebars');
 //window.ipfsAPI = require('ipfs-api');
 window.director = require('director');
 window.Buffer = require('Buffer');
+window.collutil = require('./collection-util.js');
 window.ipfswebtools = require('./ipfs-webtools.js');
 window.webui = require('./webui.js');
 
@@ -13,6 +14,9 @@ $('document').ready(function() {
 	window.ipfs_root_hash=window.location.pathname.split("/")[2];
 
 	window.ipfswebtools.init(window.ipfs_root_hash,window.location.pathname.split("/")[1]);
+
+	window.collutil.collection("newone");
+	window.collutil.collections()[0].manage.load_collection("QmUk6rMcWsRh3rihoMNZREJvJMXWko5kg8AtiA9hpuhzPm");
 
 	Handlebars.registerHelper("formatDate", function(datetime) {
 		return datetime.toLocaleDateString();
@@ -57,6 +61,7 @@ var nav_video = function(){
 var nav_video_info = function(id){
 	console.log("show info for",id);
 	if(window.ipfswebtools.isReady()){
+		if(window.webui.view_video_info.video_id!=id)window.webui.view_video_info.is_rendered=false;
 		window.webui.view_video_info.video_id=id;
 		window.webui.view.set_view("layout-video-info");
 	}else{

@@ -47,17 +47,19 @@ exports.view_video= {
 
 	get_data: function(){
 		prepare_vidlist=function(s){return {
-			date: new Date(s.Name.substr(0,4),parseInt(s.Name.substr(4,2))+1,s.Name.substr(6,2)),
-				title:s.Name.substr(9),
-				hash:s.Id,
-				video_file:s.sub.filter(function(i){return i.Name.endsWith(".md")})[0].Id,
-				youtube_meta:s.sub.filter(function(i){return i.Name.endsWith("YoutubeInfo.json")})[0].Id}
+			date: new Date(s.date),
+				title:s.title,
+				hash:s.folder_hash,
+				video_file:s.media_hash,
+				meta_file:s.folder_hash+"/.media.json"}
 			};
 
-		var vids=window.ipfswebtools.tree_root().sub.filter(function(i){return i.Name=="video"})[0]
+		var vids=window.collutil.collections()[0].data.media;
+
+		//window.ipfswebtools.tree_root().sub.filter(function(i){return i.Name=="video"})[0]
 		var data=[]
 		
-		vids.sub.forEach(function(x){data.push(prepare_vidlist(x))});
+		vids.forEach(function(x){data.push(prepare_vidlist(x))});
 
 		return {video: data};
 	}
@@ -74,13 +76,12 @@ exports.view_video_info= {
 
 	get_data: function(){
 		if(this.video_id){
-			var vids=window.ipfswebtools.tree_root().sub.filter(function(i){return i.Name=="video"})[0];
-			var vid=vids.sub.filter(function(i){return i.Id==window.webui.view_video_info.video_id})[0];
+			var vid=window.collutil.collections()[0].data.media.filter(function(i){return i.folder_hash==window.webui.view_video_info.video_id})[0];
 
 			return {id:this.video_id,
-				video_file:vid.sub.filter(function(i){return i.Name.endsWith(".mp4")})[0].Id,
-				date: new Date(vid.Name.substr(0,4),parseInt(vid.Name.substr(4,2))+1,vid.Name.substr(6,2)),
-				title:vid.Name.substr(9)
+				video_file:vid.media_hash,
+				date: new Date(vid.date),
+				title:vid.title
 
 			};
 		}else{

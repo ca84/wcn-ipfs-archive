@@ -46,12 +46,15 @@
 
 		<script id="layout-video-info" type="text/x-handlebars-template">
 		<div id="video_info_view">
-			<div class="cont_row col-1-1">
+			<div class="cont_row col-2-3">
 				<h3 class="cont_row_label">{{title}}</h3>
 				<video class="info" controls>
 				  <source src="/ipfs/{{video_file}}" type="video/mp4">
 				  Your browser does not support the video tag.
 				</video>
+			</div>
+			<div class="cont_row col-1-3">
+			{{getMetaInfo id}}
 			</div>
 
 		</div>

@@ -54,7 +54,7 @@ exports.view_video= {
 				meta_file:s.folder_hash+"/.media.json"}
 			};
 
-		var vids=window.collutil.collections()[0].data.media;
+		var vids=window.collutil.collection("wcnshows").data.media;
 
 		//window.ipfswebtools.tree_root().sub.filter(function(i){return i.Name=="video"})[0]
 		var data=[]
@@ -76,8 +76,7 @@ exports.view_video_info= {
 
 	get_data: function(){
 		if(this.video_id){
-			var vid=window.collutil.collections()[0].data.media.filter(function(i){return i.folder_hash==window.webui.view_video_info.video_id})[0];
-
+			var vid=window.collutil.collection("wcnshows").data.media.filter(function(i){return i.folder_hash==window.webui.view_video_info.video_id})[0];
 			return {id:this.video_id,
 				video_file:vid.media_hash,
 				date: new Date(vid.date),

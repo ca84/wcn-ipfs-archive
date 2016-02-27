@@ -8,19 +8,78 @@ if(typeof window!='undefined'){
 
 var ipfs = ipfsAPI({host: 'localhost', port: '5001', procotol: 'http'})
 
+
 global.imports_running=0;
 global.imports_max_paralell=2;
 
+var _root_folder={Links:[],Data:"\u0008\u0001"};
+function build_root(mhash,p){
+  if(p===undefined)p=true;
+  var pub=p;
+  var rf=_root_folder;
+  rf.Links.push({Name:".collections.json", Hash:mhash});
+  _collections.forEach(function(c){
+    rf.Links.push({Name:c.data.name, Hash:c.manage.collection_root_hash});
+  });
+  ipfs.object.put(new Buffer(JSON.stringify(rf)),'json',function(e,r){
+      console.log("NEW ROOT: ", r.Hash);
+      if(pub)ipfs.name.publish(r.Hash,function(e,r){console.log(r)})
+  });
+}
+exports.update_app= function(hash){
+  _root_folder.Links.push({Name:"app",Hash:hash})
+}
+
+exports.load_collections= function(id){
+  var bff="";
+  console.log("res :","/ipns/" + id + "/.collections.json")
+  ipfs.cat("/ipns/" + id + "/.collections.json",function(e,r){
+        console.log("res :",e)
+    r.on('data',function(d){bff+=d})
+     .on('end',function(){
+        var clls=JSON.parse(bff);
+        clls.forEach(function(c){
+          var cl=exports.collection(c.name,c.title)
+          cl.manage.load_collection(c.hash);
+
+        })
+        //console.log("parse :",JSON.parse(bff))
+        //mng.collection.data=JSON.parse(bff);
+        
+      });
+   })
+
+}
+
 var _collections=[];
 exports.collections= function(){return _collections;}
+exports.update_collections= function(){
+  var colls=[];
+  _collections.forEach(function(c){
+    colls.push({name:c.data.name,hash:c.manage.collection_root_hash,title:c.data.title});
+
+  })
+
+  ipfs.add(new Buffer(JSON.stringify(colls)),function(e,r){
+    console.log("Added COLLS meta file:",r[0].Hash);
+    build_root(r[0].Hash);
+  })
+
+
+  console.log(colls);
+
+}
+
 
 // find or create collection
-exports.collection= function(name){
+exports.collection= function(name, title){
+  if(title===undefined)title=name;
   var coll=_collections.filter(function(x){return x.data.name==name})[0];
   if (coll==undefined){
     coll={
         data:{
           name: name,
+          title: title,
           media:[],
           history:undefined
         },
@@ -59,6 +118,7 @@ load_collection_ipfs: function(coll_root_hash){
      .on('end',function(){
         //console.log("parse :",bff)
         mng.collection.data=JSON.parse(bff);
+        console.log("Loaded media:",mng.collection.data.media.length);
       });
    })
 },

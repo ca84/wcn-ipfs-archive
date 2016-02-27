@@ -11,15 +11,27 @@ var $ = require('jquery-browserify');
 
 $('document').ready(function() {
 
-	window.ipfs_root_hash=window.location.pathname.split("/")[2];
+/*
+	var path=window.location.pathname.split("/");
+	if(path[1]=="ipfs"){
+		window.ipfs_root_hash=path[2];
+	}else{
+		window.ipfs.name.resolve(path[2],function(e,r){window.ipfs_root_hash=r.Path.split("/")[2]})
+	}
 
 	window.ipfswebtools.init(window.ipfs_root_hash,window.location.pathname.split("/")[1]);
 
 	window.collutil.collection("newone");
 	window.collutil.collections()[0].manage.load_collection("QmUk6rMcWsRh3rihoMNZREJvJMXWko5kg8AtiA9hpuhzPm");
+*/
+	window.collutil.load_collections(window.location.pathname.split("/")[2]);
 
 	Handlebars.registerHelper("formatDate", function(datetime) {
 		return datetime.toLocaleDateString();
+	});
+
+	Handlebars.registerHelper("getMetaInfo", function(id) {
+		return "id_xx: " + id;
 	});
 
 	setup_router();
@@ -51,7 +63,7 @@ var setup_router = function(){
 }
 
 var nav_video = function(){ 
-	if(window.ipfswebtools.isReady()){
+	if(window.collutil.collections().length>0){
 		window.webui.view.set_view("layout-video");
 	}else{
 		setTimeout(nav_video,20);
@@ -60,7 +72,7 @@ var nav_video = function(){
 
 var nav_video_info = function(id){
 	console.log("show info for",id);
-	if(window.ipfswebtools.isReady()){
+	if(window.collutil.collections().length>0){
 		if(window.webui.view_video_info.video_id!=id)window.webui.view_video_info.is_rendered=false;
 		window.webui.view_video_info.video_id=id;
 		window.webui.view.set_view("layout-video-info");

@@ -1,7 +1,7 @@
 var ipfsAPI = window.ipfsAPI //||require('ipfs-api'); 
 var ipfs = ipfsAPI({host: 'localhost', port: '5001', procotol: 'http'})
 var stringify =  window.stringify //||require('json-stable-stringify');
-var $ = require('jquery-browserify');
+//var $ = require('jquery-browserify');
 //var $ = require('jquery');
 var _ipfs_id="";
 var _ipfs_api=false;
@@ -89,17 +89,6 @@ exports.build_folder_tree= function(){
 	}
 
 }
-/*
-function _restructure_data(){
-	_ipfs_index_data
-
-	x.forEach(function(o){
- o.Links.forEach(function(l){
-   z.push({Hash:l.Hash, Name:l.Name })
-   //console.log(l.Hash, l.Name)
- })
-}
-}*/
 
 
 /* build JSON index for a IPFS directory tree

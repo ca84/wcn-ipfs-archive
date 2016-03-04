@@ -1,30 +1,40 @@
 window = window || {};
-window.Handlebars = require('handlebars');
-//window.ipfsAPI = require('ipfs-api');
+window.ipfs_node={};
+//window.Handlebars = require('handlebars');
+var $ = require('jquery-browserify');
+
+////window.ipfsAPI = require('ipfs-api');
 window.director = require('director');
 window.Buffer = require('Buffer');
 window.collutil = require('./collection-util.js');
 window.ipfswebtools = require('./ipfs-webtools.js');
 window.webui = require('./webui.js');
 
-var $ = require('jquery-browserify');
 
 $('document').ready(function() {
-
-/*
-	var path=window.location.pathname.split("/");
-	if(path[1]=="ipfs"){
-		window.ipfs_root_hash=path[2];
-	}else{
-		window.ipfs.name.resolve(path[2],function(e,r){window.ipfs_root_hash=r.Path.split("/")[2]})
+	window.ipfs_node={
+		connection_data: {host: window.location.hostname, port: '5001', procotol: 'http'},
+		web_gateway: window.location.protocol + "//" + window.location.host,
+		api_access:false,
+		id:"",
+		swarm_address:[]
 	}
+	window.ipfs = window.ipfsAPI(window.ipfs_node.connection_data);
+	alert("hää?");
+	window.xx="hello"
 
-	window.ipfswebtools.init(window.ipfs_root_hash,window.location.pathname.split("/")[1]);
-
-	window.collutil.collection("newone");
-	window.collutil.collections()[0].manage.load_collection("QmUk6rMcWsRh3rihoMNZREJvJMXWko5kg8AtiA9hpuhzPm");
-*/
-	window.collutil.load_collections(window.location.pathname.split("/")[2]);
+	// check for ipfs api
+	window.ipfs.id()
+		.then(function(e){
+			window.ipfs_node.api_access=true;
+			window.ipfs_node.id=e.Id;
+			window.ipfs_node.swarm_address=e.Addresses;
+			console.log("IPFS API connected")}
+		).catch(function(e){
+			console.log("No IPFS API avalible: ",e.code)
+		});
+	var pathparts=window.location.pathname.split("/");
+	window.collutil.load_collections(pathparts[1],pathparts[2]);
 
 	Handlebars.registerHelper("formatDate", function(datetime) {
 		return datetime.toLocaleDateString();
@@ -80,54 +90,3 @@ var nav_video_info = function(id){
 		setTimeout(nav_video_info,20);
 	}
 }
-
-
-
-
-
-
-
-
-
-/*
-var nav_root = function(){ 
-	source   = $("#layout-home").html();
-  	template = window.Handlebars.compile(source);
-	$("#the_content").html(template({video: ui_list}));
-
-											[{title:"Der Blsdvf daf rvr"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"Wslsd evf Refe refver"},
-											{title:"fer Hlsd vf dafeffe"}]}));
-
-};
-var rtWest = function () { 	$("#the_content").html("lala")};
-var rtTest = function () { console.log("Teeeeest"); };
-
-window.ui_nav = {
-
-	data: { collections: [{name:"Video",hash:route_prefix + "#video"},{name:"Audio",hash:route_prefix + "#audio"},{name:"Misc",hash:"xyxx"}]
-	},
-
-	update_nav: function(){
-			source   = $("#nav-list-content").html();
-  			template = window.Handlebars.compile(source);
-			$(".nav_list").html(template(this.data));
-	},
-
-	load_local_nodelist: function(){
-
-		this.data.nodes=JSON.parse(
-			localStorage.ipfs_nodes || '[{"name":"localhost","connection":{"host":"localhost","port":"5001","procotol":"http"},"id":"QmXXX"}]');
-	}
-
-} 
-
-*/

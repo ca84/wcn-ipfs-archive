@@ -1,10 +1,20 @@
 var fs = require('fs')
 var ipfsAPI;
+var ipfs_node;
 if(typeof window!='undefined'){
   ipfsAPI= window.ipfsAPI;
+  ipfs_node=window.ipfs_node;
 }else{
   ipfsAPI= require('ipfs-api');
+  ipfs_node= {
+    connection_data: {host: 'localhost', port: '5001', procotol: 'http'},
+    api_access:true,
+    id:"",
+    swarm_address:[]
+  }
 }
+
+//var $ = require('jquery-browserify');
 
 var ipfs = ipfsAPI({host: 'localhost', port: '5001', procotol: 'http'})
 
@@ -30,24 +40,35 @@ exports.update_app= function(hash){
   _root_folder.Links.push({Name:"app",Hash:hash})
 }
 
-exports.load_collections= function(id){
-  var bff="";
-  console.log("res :","/ipns/" + id + "/.collections.json")
-  ipfs.cat("/ipns/" + id + "/.collections.json",function(e,r){
-        console.log("res :",e)
-    r.on('data',function(d){bff+=d})
-     .on('end',function(){
-        var clls=JSON.parse(bff);
-        clls.forEach(function(c){
-          var cl=exports.collection(c.name,c.title)
-          cl.manage.load_collection(c.hash);
+exports.load_collections= function(sch,id){
+  if(ipfs_node.api_access){
+    var bff="";
+    console.log("Source: ","/" + sch + "/" + id + "/.collections.json")
+    ipfs.cat("/" + sch + "/" + id + "/.collections.json",function(e,r){
+          //console.log("res :",e)
+      r.on('data',function(d){bff+=d})
+       .on('end',function(){
+          var clls=JSON.parse(bff);
+          clls.forEach(function(c){
+            var cl=exports.collection(c.name,c.title)
+            cl.manage.load_collection(c.hash);
+          })
+        });
+     })
+  }else{
+    console.log("/" + sch + "/" + id + "/.collections.json")
+    $.ajax({
+      url: "/" + sch + "/" + id + "/.collections.json",
+      dataType: "json"})
+  .then(function(r){
+    var clls=r;
+          clls.forEach(function(c){
+            var cl=exports.collection(c.name,c.title)
+            cl.manage.load_collection(c.hash);
+    })
+  });
 
-        })
-        //console.log("parse :",JSON.parse(bff))
-        //mng.collection.data=JSON.parse(bff);
-        
-      });
-   })
+  }
 
 }
 
@@ -102,7 +123,7 @@ collection_links:[],
 
 load_collection: function(coll_root_hash){
   this.collection_root_hash=coll_root_hash;
-  var ipfsapi=true;
+  var ipfsapi=ipfs_node.api_access;
   if(ipfsapi){
     this.load_collection_ipfs(coll_root_hash);
   }else{
@@ -124,6 +145,15 @@ load_collection_ipfs: function(coll_root_hash){
 },
 
 load_collection_http: function(coll_root_hash){
+  var mng = this.collection.manage;
+  $.ajax({
+      url: "/ipfs/" + coll_root_hash + "/.collection.json",
+      dataType: "json"})
+  .then(function(r){
+    mng.collection.data=r;
+    console.log("res",r)
+
+  });
   
 },
 

@@ -5,6 +5,7 @@ collutil = require('./collection-util.js');
 
 options = cli.parse({
 	id: 		[ 'i', 'IPFS Id', 'string', "QmY1XYR9PhF5XzveWiAqjPfNN5tEo1gd12zRYHuu5kMosE" ],
+	schema: 	[ 's', 'IPFS Schema (ipfs|ipns)', 'string', "ipns" ],
 	noload: 	[ 'n', 'dont load collections', 'false', true ],
 	path: 		[ 'p', 'base path for imports', 'file'],
 	pattern: 	[ 't', 'prefix pattern for selection', 'string', '20140722'],
@@ -15,9 +16,9 @@ options = cli.parse({
 
 cli.main(function(args, options) {
 
-	this.debug("Loading collection meta..");
+	this.info("Loading collection meta..");
 if(options.noload){
-	collutil.load_collections(options.id)
+	collutil.load_collections(options.schema,options.id)
 	var i = 0, interval = setInterval(function () { 
     cli.progress(++i / 100);
     if(collutil.collections().length>0)i=100;
@@ -48,7 +49,7 @@ function mmain(){
     case 'update':
     	cli.debug('CMD: ' + cli.command);
     	if(options.app && collutil.collections().length>0){
-    		cli.debug('opt: ' + options.app);
+    		cli.info('Updating /app folder with ' + options.app);
     		collutil.update_app(options.app);
     		collutil.update_collections();
 

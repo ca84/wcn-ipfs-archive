@@ -5,12 +5,12 @@
 
 		<script id="nav-list-content" type="text/x-handlebars-template">
 			<div id="nav_list_content">
-			<h3 class="side_nav">Collection</h3>
+			<h3 class="side_nav">Collections</h3>
 			<ul class="nav_entry">
 			
 
 			{{#collections}}
-					<li><a class="nav_link" href="../{{hash}}">{{name}}</a> </li>
+					<li><a class="nav_link" href="{{link}}">{{name}}</a> </li>
 			{{/collections}}
 			
 			</ul>
@@ -44,14 +44,16 @@
 		<script id="layout-video-info" type="text/x-handlebars-template">
 		<div id="video_info_view">
 			<div class="cont_row col-2-3">
-				<h3 class="cont_row_label">{{title}}</h3>
+				<h3 class="cont_row_label ovr">{{title}}</h3>
 				<video class="info" controls>
 				  <source src="/ipfs/{{video_file}}" type="video/mp4">
 				  Your browser does not support the video tag.
 				</video>
 			</div>
 			<div class="cont_row col-1-3">
-			{{getMetaInfo id}}
+				<h3 class="cont_row_label ovr">Shows Notes:</h3>
+				
+				<div style="line-height: 1.6;margin: 10px;margin-top: 52px;" id="desc"></div>
 			</div>
 
 		</div>
@@ -61,19 +63,46 @@
 
 		<script id="layout-video" type="text/x-handlebars-template">
 		<div id="video_list_view">
-			<div class="cont_row col-1-2" style="height:80px">
+			<!--div class="cont_row col-1-2" style="height:80px">
 				<h3 class="cont_row_label">Find:</h3>
 				<div class="cont_block">
 					<input id="searchbar" type="text"></input>
 					
 				</div>
+			</div/-->
+
+			<div class="cont_row col-1-1">
+
+				<h3 class="cont_row_label">{{title}}</h3>
+					<p>{{description}}</p>
+
+			</div/>
+
+		
+			<div class="cont_row col-2-3" style="display: inline;height:85%">
+
+				<h3 class="cont_row_label ovr">Recently Added:</h3>
+				{{#video}}
+				<div class="resut_list_entry"><a href="#/play/{{hash}}">
+					<img height="100" src="images/thumb.png"></a>
+					<div class="resut_list_entry_text"><h2><a href="#/info/{{hash}}">{{title}}</a></h2>
+						<p>{{video_file}}</p>
+						<p>{{youtube_meta}}</p>
+						<div class="resut_list_entry_date">{{formatDate date}}</div>
+					</div>
+
+				</div>
+				{{/video}}	
+
 			</div>
 
-			<div class="cont_row col-1-2" style="height:80px">
-				<h3 class="cont_row_label">Shows:</h3>
-				<div style="padding-left:110px;"></div>
-				<div class="cont_block" style="margin-top: -15;">
-					<p style="line-height: 1.8;">
+
+
+
+			<div class="cont_row col-1-3">
+				<h3 class="cont_row_label ovr">Shows:</h3>
+				<div class="cont_block" style="max-height: 120px;overflow-y: auto;">
+					<p style="line-height: 1.8;margin-top: 32px;">
 						<span class="list_item">Dark News</span>
 						<span class="list_item">Lala News</span>
 						<span class="list_item">Bitcoin News</span>
@@ -89,24 +118,26 @@
 					</p>
 				</div>
 			</div>
-		
-			<div class="cont_row col-2-3" style="display: inline;height:60%">
 
-				<h3 class="cont_row_label">Result:</h3>
-				{{#video}}
-				<div class="resut_list_entry"><a href="#/play/{{hash}}">
-					<img height="100" src="images/thumb.png"></a>
-					<div class="resut_list_entry_text"><h2><a href="#/info/{{hash}}">{{title}}</a></h2>
-						<p>{{video_file}}</p>
-						<p>{{youtube_meta}}</p>
-						<div class="resut_list_entry_date">{{formatDate date}}</div>
-					</div>
-
-				</div>
-				{{/video}}	
-
-			</div>
 			<div class="cont_row col-1-3">
+				<h3 class="cont_row_label ovr">Date:</h3>
+				<div class="cont_block" style="max-height: 120px;overflow-y: auto;">
+					<p style="line-height: 1.8;margin-top: 32px;">
+						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">this week</a></span>
+						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">this month</a></span>
+						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">last 3 month</a></span>
+						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">last half year</a></span>
+						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">2015</a></span>
+						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">2014</a></span>
+						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">2013</a></span>
+
+					</p>
+				</div>
+			</div>
+
+
+
+			<!--div class="cont_row col-1-3">
 				<h3 class="cont_row_label">Recently Added:</h3>
 				{{#video}}
 					<div class="cont_row_slot"><img height="100" src="images/thumb.png"><p>{{title}}</p></div>
@@ -123,7 +154,7 @@
 					
 				<input type="text"></input>
 
-			</div>
+			</div/-->
 
 		</div>
 

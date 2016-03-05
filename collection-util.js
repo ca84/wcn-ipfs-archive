@@ -31,9 +31,9 @@ function build_root(mhash,p){
   _collections.forEach(function(c){
     rf.Links.push({Name:c.data.name, Hash:c.manage.collection_root_hash});
   });
-  ipfs.object.put(new Buffer(JSON.stringify(rf)),'json',function(e,r){
-      console.log("NEW ROOT: ", r.Hash);
-      if(pub)ipfs.name.publish(r.Hash,function(e,r){console.log(r)})
+  return ipfs.object.put(new Buffer(JSON.stringify(rf)),'json').chain(function(r){
+      //console.log("NEW ROOT: ", r.Hash);
+      if(pub)return ipfs.name.publish(r.Hash)
   });
 }
 exports.update_app= function(hash){
@@ -43,7 +43,7 @@ exports.update_app= function(hash){
 exports.load_collections= function(sch,id){
   if(ipfs_node.api_access){
     var bff="";
-    console.log("Source: ","/" + sch + "/" + id + "/.collections.json")
+    console.log("      /" + sch + "/" + id + "/.collections.json")
     ipfs.cat("/" + sch + "/" + id + "/.collections.json",function(e,r){
           //console.log("res :",e)
       r.on('data',function(d){bff+=d})
@@ -77,17 +77,20 @@ exports.collections= function(){return _collections;}
 exports.update_collections= function(){
   var colls=[];
   _collections.forEach(function(c){
-    colls.push({name:c.data.name,hash:c.manage.collection_root_hash,title:c.data.title});
+    colls.push({name:c.data.name,hash:c.manage.collection_root_hash,title:c.data.title,type:c.data.type,description:c.data.description});
 
   })
 
-  ipfs.add(new Buffer(JSON.stringify(colls)),function(e,r){
+  return ipfs.add(new Buffer(JSON.stringify(colls)))
+    .chain(function(r){
+      return build_root(r[0].Hash);
+    });
+/*,function(e,r){
     console.log("Added COLLS meta file:",r[0].Hash);
     build_root(r[0].Hash);
-  })
+  } */
 
-
-  console.log(colls);
+  //console.log(colls);
 
 }
 
@@ -101,6 +104,8 @@ exports.collection= function(name, title){
         data:{
           name: name,
           title: title,
+          description: "",
+          type: "video",
           media:[],
           history:undefined
         },
@@ -109,8 +114,40 @@ exports.collection= function(name, title){
     coll.manage.collection=coll;
     _collections.push(coll);
   }
+  coll.data.type="video";
+  coll.data.description="All Youtube uploads of World Crypto Network, bla bla";
   return coll;
 }
+
+
+exports.load_media_meta= function(folder_id){
+  return new Promise(function(resolve, reject) {
+    if(ipfs_node.api_access){
+      var bff="";
+      console.log("      /ipfs/" + folder_id + "/.media.json")
+      ipfs.cat("/ipfs/" + folder_id + "/.media.json",function(e,r){
+            //console.log("res :",e)
+        r.on('data',function(d){bff+=d})
+         .on('end',function(){
+            var mt=JSON.parse(bff);
+            resolve(mt);
+            
+          });
+       })
+    }else{
+      console.log("/ipfs/" + folder_id + "/.media.json")
+      $.ajax({
+        url: "/ipfs/" + folder_id + "/.media.json",
+        dataType: "json"})
+    .then(function(r){
+      resolve(r);
+      })
+    }
+  });
+
+  };
+
+
 
 
 var manage_factory =function(){ return {
@@ -139,7 +176,7 @@ load_collection_ipfs: function(coll_root_hash){
      .on('end',function(){
         //console.log("parse :",bff)
         mng.collection.data=JSON.parse(bff);
-        console.log("Loaded media:",mng.collection.data.media.length);
+        //console.log("Loaded media:",mng.collection.data.media.length);
       });
    })
 },

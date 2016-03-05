@@ -41,6 +41,7 @@ exports.view_video= {
 	template_id: "layout-video",
 	target_id: "the_content",
 	container_id: "video_list_view",
+	coll_name: "",
 	is_rendered: false,
 	container: undefined,
 	template: undefined,
@@ -54,14 +55,18 @@ exports.view_video= {
 				meta_file:s.folder_hash+"/.media.json"}
 			};
 
-		var vids=window.collutil.collection("wcnshows").data.media;
+		var vids=window.collutil.collection(this.coll_name).data.media;
+		var title=window.collutil.collection(this.coll_name).data.title;
+		var desc=window.collutil.collection(this.coll_name).data.description
 
 		//window.ipfswebtools.tree_root().sub.filter(function(i){return i.Name=="video"})[0]
 		var data=[]
 		
 		vids.forEach(function(x){data.push(prepare_vidlist(x))});
 
-		return {video: data};
+		return {video: data,
+				title: title,
+				description: desc};
 	}
 }
 
@@ -98,17 +103,11 @@ exports.view_nav= {
 	is_rendered: false,
 	container: undefined,
 	template: undefined,
-	data: { collections: [{name:"Video",hash:"app/#video"},
-						{name:"Audio",hash:"app/#audio"},
-						{name:"Misc",hash:"xyxx"}]
+	data: { collections: []
 	},
 
 	get_data: function(){
-
+		this.data.collections = window.collutil.collections().map(function(x){return {name: x.data.title, link:"../app/#/collection/" + x.data.name}});
 		return this.data;
 	}
 }
-/*
-exports.view.add_view(exports.view_video);
-exports.view.add_view(exports.view_video_info);
-*/

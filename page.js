@@ -13,14 +13,14 @@ window.webui = require('./webui.js');
 
 $('document').ready(function() {
 	window.ipfs_node={
-		connection_data: {host: window.location.hostname, port: '5001', procotol: 'http'},
+		connection_data: {host: window.location.hostname, port: '5002', procotol: 'http'},
 		web_gateway: window.location.protocol + "//" + window.location.host,
 		api_access:false,
 		id:"",
 		swarm_address:[]
 	}
 	window.ipfs = window.ipfsAPI(window.ipfs_node.connection_data);
-	alert("hää?");
+	//alert("hää?");
 	window.xx="hello"
 
 	// check for ipfs api
@@ -41,14 +41,23 @@ $('document').ready(function() {
 	});
 
 	Handlebars.registerHelper("getMetaInfo", function(id) {
+		
 		return "id_xx: " + id;
 	});
 
-	setup_router();
+	var waitFroCollectionToLoad= setInterval(function () {
+		if(window.collutil.collections().length>0){
+			clearInterval(waitFroCollectionToLoad);
+			setup_router();			
+		}
+	},100)
+
+
+
 
 });
 
-var route_prefix = "app/"
+//var route_prefix = "app/"
 
 var setup_router = function(){
       // define the routing table.
@@ -58,9 +67,8 @@ var setup_router = function(){
       window.webui.view.show_view(window.webui.view_nav);
 
       var routes = {
-        '/video': nav_video,
-        '/info/:id': nav_video_info,
-        '/audio': nav_video
+        '/collection/:id': nav_collection,
+        '/info/:id': nav_video_info
       };
 
 
@@ -72,11 +80,15 @@ var setup_router = function(){
 
 }
 
-var nav_video = function(){ 
+var nav_collection = function(id){ 
+	console.log("view coll: ",id)
 	if(window.collutil.collections().length>0){
-		window.webui.view.set_view("layout-video");
+		if(window.collutil.collection(id).data.type=="video"){
+			window.webui.view_video.coll_name=id;
+			window.webui.view.set_view("layout-video");
+		}
 	}else{
-		setTimeout(nav_video,20);
+		setTimeout(nav_collection,20);
 	}
 }
 
@@ -86,6 +98,9 @@ var nav_video_info = function(id){
 		if(window.webui.view_video_info.video_id!=id)window.webui.view_video_info.is_rendered=false;
 		window.webui.view_video_info.video_id=id;
 		window.webui.view.set_view("layout-video-info");
+		collutil.load_media_meta(id).then(function(r){
+		$('#desc').html(r.description);	
+		})
 	}else{
 		setTimeout(nav_video_info,20);
 	}

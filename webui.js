@@ -66,7 +66,8 @@ exports.view_video= {
 
 		return {video: data,
 				title: title,
-				description: desc};
+				description: desc,
+				categories:window.collutil.collection(this.coll_name).data.categories};
 	}
 }
 

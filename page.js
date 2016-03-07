@@ -68,6 +68,7 @@ var setup_router = function(){
 
       var routes = {
         '/collection/:id': nav_collection,
+        '/collection/:id/:show': nav_collection_show,
         '/info/:id': nav_video_info
       };
 
@@ -80,7 +81,21 @@ var setup_router = function(){
 
 }
 
-var nav_collection = function(id){ 
+
+
+var nav_collection_show = function(id,show){ 
+	console.log("view show: ",show);
+	window.webui.view_video.category_filter=show;
+	window.webui.view_video.is_rendered=false;
+	nav_collection(id,true);
+
+
+}
+var nav_collection = function(id,f){
+	if(f===undefined && window.webui.view_video.category_filter!=""){
+		window.webui.view_video.is_rendered=false;
+		window.webui.view_video.category_filter="";
+	}
 	console.log("view coll: ",id)
 	if(window.collutil.collections().length>0){
 		if(window.collutil.collection(id).data.type=="video"){

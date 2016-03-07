@@ -73,10 +73,10 @@
 		
 			<div class="cont_row col-2-3" style="display: inline;height:85%">
 
-				<h3 class="cont_row_label ovr">Recently Added:</h3>
+				<h3 class="cont_row_label ovr">{{list_title}}</h3>
 				{{#video}}
 				<div class="resut_list_entry"><a href="#/play/{{hash}}">
-					<img height="100" src="images/thumb.png"></a>
+					<img height="100" src="/ipfs/{{hash}}/poster.jpg"></a>
 					<div class="resut_list_entry_text"><h2><a href="#/info/{{hash}}">{{title}}</a></h2>
 						<p>{{video_file}}</p>
 						<p>{{youtube_meta}}</p>
@@ -105,7 +105,7 @@
 				<h3 class="cont_row_label ovr">Date:</h3>
 				<div class="cont_block" style="max-height: 120px;overflow-y: auto;">
 					<p style="line-height: 1.8;margin-top: 32px;">
-						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">this week</a></span>
+						<span class="list_item"><a href="../app/#/collection/wcnshows">this week</a></span>
 						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">this month</a></span>
 						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">last 3 month</a></span>
 						<span class="list_item"><a href="../app/#/collection/wcnshows/date/week">last half year</a></span>

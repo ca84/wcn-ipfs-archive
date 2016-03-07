@@ -45,6 +45,9 @@ exports.view_video= {
 	is_rendered: false,
 	container: undefined,
 	template: undefined,
+	list_title: "Recently Added",
+	category_filter: "",
+	date_filter: "",
 
 	get_data: function(){
 		prepare_vidlist=function(s){return {
@@ -55,9 +58,30 @@ exports.view_video= {
 				meta_file:s.folder_hash+"/.media.json"}
 			};
 
-		var vids=window.collutil.collection(this.coll_name).data.media;
 		var title=window.collutil.collection(this.coll_name).data.title;
 		var desc=window.collutil.collection(this.coll_name).data.description
+
+		var vids=window.collutil.collection(this.coll_name).data.media
+			.sort(function(a,b){return new Date(a.date).getTime()-new Date(b.date).getTime()})
+			.reverse();
+
+		// default recently added
+		if(this.category_filter=="" && this.date_filter==""){
+			this.list_title="Recently Added";
+			vids=vids
+				.filter(function(e,i){return i < 15});
+		}else{
+			if(this.category_filter!=""){
+				var catfilter=this.category_filter
+				this.list_title=window.collutil.collection(this.coll_name).data.categories.filter(function(e){return e.short==catfilter})[0].title;
+				vids=vids
+					.filter(function(e,i){return e.category == catfilter})
+					console.log("cat filter:",catfilter)
+				this.list_title=this.list_title  + " ( " + vids.length + " Episodes )";	//.filter(function(e,i){return i < 15});
+
+			}
+
+		}
 
 		//window.ipfswebtools.tree_root().sub.filter(function(i){return i.Name=="video"})[0]
 		var data=[]
@@ -67,7 +91,8 @@ exports.view_video= {
 		return {video: data,
 				title: title,
 				description: desc,
-				categories:window.collutil.collection(this.coll_name).data.categories};
+				categories:window.collutil.collection(this.coll_name).data.categories,
+				list_title:this.list_title };
 	}
 }
 

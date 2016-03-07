@@ -48,9 +48,9 @@ exports.update_collection_categories= function(cname,data){
   var col=exports.collection(cname);
   col.data.categories=data;
   col.manage.collection_modified=true;
-  //ugly static hack!!!
-  col.manage.update_collection_root({Name:"all",Hash:"Qme1mcXwZSEjxiGn8GxsW8G9z4vNE2wXGv4YeroodfBDMC"});
-  col.manage.update_collection_meta();
+  return col.manage.update_collection()
+  //col.manage.update_collection_root({Name:"all",Hash:"Qme1mcXwZSEjxiGn8GxsW8G9z4vNE2wXGv4YeroodfBDMC"});
+  //col.manage.update_collection_meta();
 }
 
 

@@ -75,20 +75,13 @@ function mmain(){
 			cli.info('Updating category meta for' + options.collection + ' with ' + options.category);
     		cat=require(options.category);
     		var crh=collutil.collection(options.collection).manage.collection_root_hash + "";
-    		collutil.update_collection_categories(options.collection, cat);
+    		collutil.update_collection_categories(options.collection, cat)
+	    		.then(function(x){
+					cli.info("Collection Updated: " + x.Name + " ( " + x.Hash + " )")
+					update_root();
 
-
-			var i = 0, interval = setInterval(function () { 
-			    cli.progress(++i / 100);
-			    if( crh!=collutil.collection(options.collection).manage.collection_root_hash && i<99)i=99;
-			    if (i === 100) {
-			        clearInterval(interval);
-			        cli.ok('Collection root updated: ' + collutil.collection(options.collection).manage.collection_root_hash);
-			        update_root();
-			    }
-			}, 150);
-
-
+				})
+				.catch(function(e){cli.error("FAILED TO UPDATE:" + e)});
 
     	}
     	//collutil.collection("wcnshows").data.description="All Youtube uploads of World Crypto Network, bla bla";

@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@repo.raincloud.ch:m0se/wcn-ipfs.git"
+    "url": "git@github.com:m0se/wcn-ipfs-archive.git"
   },
   "keywords": [
     "ipfs"
@@ -20,8 +20,7 @@
     "cli": "^0.11.1",
     "director": "^1.2.8",
     "handlebars": "^4.0.5",
-    "ipfs-api": "^2.13.0",
-    "jquery": "^2.2.1"
+    "ipfs-api": "^2.13.0"
   },
   "devDependencies": {
     "browserify": "^13.0.0",

@@ -44,6 +44,10 @@ exports.update_app= function(hash){
   _app_folder_hash=hash;
 }
 
+exports.ipfs_noder_id= function(){
+  return ipfs.id()
+}
+
 exports.update_collection_categories= function(cname,data){
   var col=exports.collection(cname);
   col.data.categories=data;

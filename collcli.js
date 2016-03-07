@@ -4,8 +4,11 @@ collutil = require('./collection-util.js');
 cli.enable('status');
 var loaded=false;
 
+collutil.ipfs_noder_id().then(function(idres){
+
+
 options = cli.parse({
-	id: 		[ 'i', 'IPFS Id', 'string', "QmY1XYR9PhF5XzveWiAqjPfNN5tEo1gd12zRYHuu5kMosE" ],
+	id: 		[ 'i', 'IPFS Id', 'string', idres.ID ],
 	schema: 	[ 's', 'IPFS Schema (ipfs|ipns)', 'string', "ipns" ],
 	noload: 	[ 'n', 'dont load collections', 'false', true ],
 	path: 		[ 'p', 'base path for imports', 'file'],
@@ -149,3 +152,5 @@ function mmain(){
 });
 
 
+
+}).catch(function(e){cli.error("FAILED TO CONNECT IPFS API:" + e)});

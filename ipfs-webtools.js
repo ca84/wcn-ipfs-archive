@@ -11,6 +11,14 @@ var _base_url="/ipfs/"
 var _tree_root;
 var _ready=false;
 
+
+/* ####################################
+// THIS FILE WILL BE REMOVER OVER TIME
+// ..part of the first run, now obsolete 
+*/
+
+
+
 exports.isReady= function(){return _ready};
 exports.new_root= function(){return _new_root};
 exports.tree_root= function(){return _tree_root};

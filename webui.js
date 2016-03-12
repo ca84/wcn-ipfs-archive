@@ -44,11 +44,14 @@ exports.view_home= {
 	is_rendered: false,
 	container: undefined,
 	template: undefined,
+	data: { collections: [], recent:[]},
 
 	get_data: function(){
-		
-		
-		return {title:"empty"}
+		this.data.recent = window.collutil.recently_added_media(4)
+		this.data.collections = window.collutil.collections()
+			.map(function(x){return {
+				name: x.data.title, link:"../app/#/collection/" + x.data.name, desc: x.data.description}});
+		return this.data;
 	}
 }
 
@@ -91,7 +94,7 @@ exports.view_video= {
 				this.list_title=window.collutil.collection(this.coll_name).data.categories.filter(function(e){return e.short==catfilter})[0].title;
 				vids=vids
 					.filter(function(e,i){return e.category == catfilter})
-					console.log("cat filter:",catfilter)
+					//console.log("cat filter:",catfilter)
 				this.list_title=this.list_title  + " ( " + vids.length + " Episodes )";	//.filter(function(e,i){return i < 15});
 
 			}

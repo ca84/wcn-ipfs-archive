@@ -29,12 +29,24 @@
 		<div id="home_view">
 			<div class="cont_row col-1-2">
 				<h3 class="cont_row_label">Collections</h3>
-				kjlljlkl
+			
+			{{#collections}}
+				<a href="{{link}}"><div class="collection_mini_home">{{name}}
+				<div style="font-size:12px;">{{desc}}</div>
+			{{/collections}}
+			</div></a>
+
+
+
 			</div>
 			<div class="cont_row col-1-2">
-				<h3 class="cont_row_label">Recently Added</h3>
-				kjllljlk
-			</div>
+				<h3 class="cont_row_label ovr">Recently Added</h3><div class="recent_mini_home">
+				{{#recent}}
+				<div style="padding: 4px" class="tipfor"><a href="#/info/{{folder_hash}}"><img height="70" src="/ipfs/{{folder_hash}}/poster.jpg"></a>
+				<span class="tooltip">{{title}}</span>
+				</div>
+				{{/recent}}
+			</div></div>
 
 			<div class="cont_row col-1-1">
 				<h3 class="cont_row_label ovr">Development Note / <a href="README.md"><i class="fa fa-file-text-o"></i> README.md</a></h3>
@@ -139,7 +151,7 @@
 	<body>
 		<aside class="nav_content">
 		<header class="header"><div class="header_box">
-			<div class="haed_line"><img src="images/wcna.png"></div><!--div class="haed_line">Ueeeii</div/--></div></header>
+			<div class="haed_line"><a href="#/"><img src="images/wcna.png"></a></div><!--div class="haed_line">Ueeeii</div/--></div></header>
 		<div id="the_nav" class="nav_list"></div>
 		</aside> 
 		<div class="main_content">

@@ -48,6 +48,22 @@ exports.ipfs_noder_id= function(){
   return ipfs.id()
 }
 
+exports.recently_added_media= function(limit){
+  var lst=[];
+  for(c in exports.collections()){
+    var cnt=0;
+    lst=lst.concat(exports.collections()[c].data.media
+      .sort(function(a,b){return new Date(a.date).getTime()-new Date(b.date).getTime()})
+      .reverse()
+      .filter(function(x){cnt++;return cnt<=limit}));
+  }
+  cnt=0;
+  return lst
+    .sort(function(a,b){return new Date(a.date).getTime()-new Date(b.date).getTime()})
+    .reverse()
+    .filter(function(x){cnt++;return cnt<=limit}); 
+}
+
 exports.update_collection_categories= function(cname,data){
   var col=exports.collection(cname);
   col.data.categories=data;

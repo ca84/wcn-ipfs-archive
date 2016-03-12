@@ -14,26 +14,35 @@ window.webui = require('./webui.js');
 
 $('document').ready(function() {
 	window.ipfs_node={
-		connection_data: {host: window.location.hostname, port: '5002', procotol: 'http'},
+		connection_data: {host: window.location.hostname, port: '5001', procotol: 'http'},
 		web_gateway: window.location.protocol + "//" + window.location.host,
 		api_access:false,
 		id:"",
 		swarm_address:[]
 	}
-	window.ipfs = window.ipfsAPI(window.ipfs_node.connection_data);
-	//alert("hää?");
-	window.xx="hello"
 
-	// check for ipfs api
-	window.ipfs.id()
-		.then(function(e){
-			window.ipfs_node.api_access=true;
-			window.ipfs_node.id=e.Id;
-			window.ipfs_node.swarm_address=e.Addresses;
-			console.log("IPFS API connected")}
-		).catch(function(e){
-			console.log("No IPFS API avalible: ",e.code)
-		});
+	// only try to connect IPFS API on localhost
+	if(window.location.hostname=="localhost" || window.location.hostname=="127.0.0.1"){
+		window.ipfs = window.ipfsAPI(window.ipfs_node.connection_data);
+		
+		// check for ipfs api connectivity
+		window.ipfs.id()
+			.then(function(e){
+				window.ipfs_node.api_access=true;
+				window.ipfs_node.id=e.Id;
+				window.ipfs_node.swarm_address=e.Addresses;
+				console.log("IPFS API connected")
+				$('#ipfs_logo').css({"opacity":"1"})}
+			).catch(function(e){
+				console.log("No IPFS API avalible: ",e.code)
+				$('#ipfs_logo').css({"opacity":"0.3"});
+			});
+		
+	}else{
+
+		console.log("No IPFS API avalible: no conf for " + window.location.hostname);
+		$('#ipfs_logo').css({"opacity":"0.3"});
+	}
 	var pathparts=window.location.pathname.split("/");
 	window.collutil.load_collections(pathparts[1],pathparts[2]);
 
@@ -81,8 +90,7 @@ var setup_router = function(){
       var router = window.director.Router(routes);
 
       router.init();
-
-      window.location.assign("#/");
+      if(window.location.href.indexOf("#")<0)window.location.assign("#/");
 
 }
 

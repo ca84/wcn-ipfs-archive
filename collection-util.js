@@ -291,6 +291,7 @@ update_collection: function(){
     var prms=[
       mng.update_media_all_folders(),
       mng.update_media_category_folders(),
+      mng.update_media_date_folders(),
       mng.update_collection_metadata()
     ];
 
@@ -345,6 +346,148 @@ update_media_all_folders: function(){
   
 },
 
+update_media_date_folders: function(){
+  var mng = this.collection.manage;
+  return new Promise(function(resolve, reject) {
+    var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    var media=mng.collection.data.media;
+    var years=[];for(i in media){y=(new Date(media[i].date)).getFullYear();if(years.indexOf(y)<0)years.push(y);}
+    var yprms=[];
+    var yfolders=[];
+
+    for(y in years){
+      mfolders=[];
+      for(m in monthNames){
+        var folder={Links:[],Data:"\u0008\u0001"};
+        var mm=media.filter(function(me){return (new Date(me.date)).getFullYear()== years[y] && (new Date(me.date)).getMonth()==m;});
+        mm.forEach(function(x){
+          //console.log(y,m,x);
+          var d=(new Date(x.date)).getDate();
+          var pfx="";if(d<10)pfx="0";
+          folder.Links.push({
+            Name: pfx + d + ". " + x.title,
+            Hash: x.folder_hash
+          });
+        });
+
+        if(folder.Links.length>0)mfolders[m]=folder;
+      }
+      yfolders.push({year:years[y],folders:mfolders})
+    }
+
+    var sz_prms=[];
+    // get size for all media folders
+    for(y in yfolders){
+      for(i in yfolders[y].folders){
+        if(yfolders[y].folders[i]!=null){
+          for(l in yfolders[y].folders[i].Links){
+            sz_prms.push(ipfs.object.stat(yfolders[y].folders[i].Links[l].Hash));
+          }
+        }
+      }
+    }
+    Promise.all(sz_prms).then(function(rs){
+      var cnt=0;
+      for(y in yfolders){
+        for(i in yfolders[y].folders){
+          if(yfolders[y].folders[i]!=null){
+            for(l in yfolders[y].folders[i].Links){
+              yfolders[y].folders[i].Links[l].Size=rs[cnt].CumulativeSize;
+              cnt++
+            }
+          }
+        }
+      }
+
+      // create all month folders
+      var mf_prms=[];
+      for(y in yfolders){
+        for(i in yfolders[y].folders){
+          if(yfolders[y].folders[i]!=null){
+             mf_prms.push(ipfs.object.put(new Buffer(JSON.stringify(yfolders[y].folders[i])),'json'));
+              
+          }
+        }
+      }
+      Promise.all(mf_prms).then(function(rs){
+      var cnt=0;
+      for(y in yfolders){
+        yfolders[y].folder={Links:[],Data:"\u0008\u0001"};
+        for(i in yfolders[y].folders){
+          var pfx="";if(i<9)pfx="0";
+          if(yfolders[y].folders[i]!=null){
+            var sz=0;
+            for(l in yfolders[y].folders[i].Links){
+              sz=sz+yfolders[y].folders[i].Links[l].Size;
+            }
+
+            yfolders[y].folder.Links.push({
+              Name: pfx + (parseInt(i)+1) + " " + monthNames[i],
+              Hash: rs[cnt].Hash,
+              Size: sz
+            });
+            cnt++;
+          }
+        }
+      }
+
+      //create year folder
+      y_prms=[];
+      for(y in yfolders){
+        y_prms.push(ipfs.object.put(new Buffer(JSON.stringify(yfolders[y].folder)),'json'));
+        
+      }
+      Promise.all(y_prms).then(function(rs){
+        var topfolder={Links:[],Data:"\u0008\u0001"};
+
+        for(y in yfolders){
+          var sz=0;
+          for(l in yfolders[y].folder.Links){
+            sz=sz+yfolders[y].folder.Links[l].Size;
+          }
+          topfolder.Links.push({
+            Name: years[y] + "",
+            Hash: rs[y].Hash,
+            Size: sz
+          });
+        }
+
+        ipfs.object.put(new Buffer(JSON.stringify(topfolder)),'json',function(e,r){
+          var hash=r.Hash;
+
+          console.log(JSON.stringify(r,null,1));
+          resolve({Name:"by date",Hash:hash});
+
+        });
+
+
+      });
+
+      }); 
+      
+//    console.log(JSON.stringify(yfolders,null,1));      
+    });
+
+
+
+/*
+
+    ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
+      var hash=r.Hash;
+      resolve({Name:"by date",Hash:hash});
+
+    });
+
+*/
+
+  });
+
+  //for(i=0;i<12;i++){pfx="";if(i<9)pfx="0";console.log(pfx + (i+1) + " " + monthNames[i])}
+
+
+
+},
+
 update_media_category_folders: function(){
   var mng = this.collection.manage;
   return new Promise(function(resolve, reject) {
@@ -353,11 +496,12 @@ update_media_category_folders: function(){
     var prms=[];
     var folders=[];
 
-    // get size for all folders
+    // get size for all media folders
     for(i in media){
       prms.push(ipfs.object.stat(media[i].folder_hash));
     }
     Promise.all(prms).then(function(r){
+      //console.log(r[1])
 
       // finde EPs for all categories
       for(c in cats){
@@ -396,21 +540,36 @@ update_media_category_folders: function(){
 
       }
       Promise.all(cfpms).then(function(r){
-        // create "by show" folder
-        var folder={Links:[],Data:"\u0008\u0001"};
-        for(f in folders){
-          folder.Links.push({
-            Name: folders[f].cat,
-            Hash: r[f].Hash});
+        var sz_prms=[];
+        // get size for all show folders
+        for(i in r){
+          sz_prms.push(ipfs.object.stat(r[i].Hash));
         }
-        //console.log("by show subs : ",folder);
+        Promise.all(sz_prms).then(function(rs){
 
-        ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
-          var hash=r.Hash;
-          resolve({Name:"by show",Hash:hash});
+          // create "by show" folder
+          var folder={Links:[],Data:"\u0008\u0001"};
+          for(f in folders){
+            folder.Links.push({
+              Name: folders[f].cat,
+              Hash: r[f].Hash,
+              Size:rs[f].CumulativeSize});
+            //console.log("Entry: ",folders[f].cat,rs[f].CumulativeSize)
+          }
+          //console.log("by show subs : ",folder);
 
-        });
+          ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
+            var hash=r.Hash;
+            resolve({Name:"by show",Hash:hash});
+
+          });
+
+        });      
+
+
       });
+
+
     });  
   });  
   
@@ -504,7 +663,7 @@ create_media_folder: function(file_hash,fname,fext,meta_hash,mname,meta,poster_h
 // Step 2 transform yt json and add to IPFS
 create_meta_data: function(file_hash,poster_hash,meta_obj,sha256){
   var m={};
-  m.publish_date        = new Date(meta_obj.upload_date.substr(0,4),parseInt(meta_obj.upload_date.substr(4,2))+1,meta_obj.upload_date.substr(6,2));
+  m.publish_date        = new Date(meta_obj.upload_date.substr(0,4),parseInt(meta_obj.upload_date.substr(4,2))-1,meta_obj.upload_date.substr(6,2));
   m.title               = meta_obj.fulltitle;
   m.media_type           = "video";
   m.file_type           = meta_obj.ext;

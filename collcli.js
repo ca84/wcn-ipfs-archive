@@ -16,6 +16,7 @@ options = cli.parse({
 	app: 		[ 'a', 'IPFS id of app folder', 'string' ],
 	collection: [ 'c', 'collection name', 'string' ],
 	category: 	[ '', 'category JSON-file', 'file' ],
+	dironly: 	[ '', 'update directory tree only', 'bool', false ],
 	key: 		[ 'k', 'key', 'string' ],
 	root: 		[ 'r', 'update root and id', 'false', true ]},
 	['get-collection', 'get-mediameta', 'get-mediafile','do','import','update']);
@@ -87,6 +88,21 @@ function mmain(){
 				.catch(function(e){cli.error("FAILED TO UPDATE:" + e)});
 
     	}
+    	if(options.dironly && options.collection && loaded){
+    		cli.info("Updating directories only");
+    		coll=collutil.collection(options.collection); 
+    		coll.manage.collection_modified=true;
+			coll.manage.update_collection()
+				.then(function(x){
+					cli.info("Collection Updated: " + x.Name + " ( " + x.Hash + " )")
+					update_root();
+
+				})
+				.catch(function(e){cli.error("FAILED TO UPDATE:" + e)});
+
+    	}
+    	cli.debug(options.dironly);
+
     	//collutil.collection("wcnshows").data.description="All Youtube uploads of World Crypto Network, bla bla";
     	//collutil.collection("wcnshows").data.type="video";
     	//cli.debug(collutil.collection("wcnshows").data.description)

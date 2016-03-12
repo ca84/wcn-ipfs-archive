@@ -20,7 +20,8 @@
     "cli": "^0.11.1",
     "director": "^1.2.8",
     "handlebars": "^4.0.5",
-    "ipfs-api": "^2.13.0"
+    "ipfs-api": "^2.13.0",
+    "node-markdown": "^0.1.1"
   },
   "devDependencies": {
     "browserify": "^13.0.0",

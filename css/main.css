@@ -22,6 +22,12 @@ a{
 p{
     margin: 12px;
 }
+
+pre{
+    background: #F8F8FF;
+    border: black dashed 1px;
+    padding: 6px;
+}
 .main_content {
     top: 0;
     bottom: 0;
@@ -214,6 +220,12 @@ p{
     padding: 7px;
 }
 
+.readme_cont{    
+    padding: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 div::-webkit-scrollbar-track
 {
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
@@ -243,7 +255,7 @@ div::-webkit-scrollbar-thumb
   width: 31%;
 }
 .cont_row.col-1-2 {
-  width: 48%;
+  width: 47.7%;
 }
 .cont_row.col-1-1 {
   width: 96%;

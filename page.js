@@ -6,6 +6,7 @@ var $ = require('jquery-browserify');
 ////window.ipfsAPI = require('ipfs-api');
 window.director = require('director');
 window.Buffer = require('Buffer');
+window.md = require("node-markdown").Markdown;
 window.collutil = require('./collection-util.js');
 window.ipfswebtools = require('./ipfs-webtools.js');
 window.webui = require('./webui.js');
@@ -61,12 +62,14 @@ $('document').ready(function() {
 
 var setup_router = function(){
       // define the routing table.
+      window.webui.view.add_view(window.webui.view_home);
       window.webui.view.add_view(window.webui.view_video);
       window.webui.view.add_view(window.webui.view_video_info);
       window.webui.view.add_view(window.webui.view_nav);
       window.webui.view.show_view(window.webui.view_nav);
 
       var routes = {
+      	'/': nav_home,
         '/collection/:id': nav_collection,
         '/collection/:id/:show': nav_collection_show,
         '/info/:id': nav_video_info
@@ -79,8 +82,19 @@ var setup_router = function(){
 
       router.init();
 
+      window.location.assign("#/");
+
 }
 
+var nav_home = function(){
+	window.webui.view.set_view("layout-home");
+
+	$.ajax({url:'README.md'})
+		.then(function(r){
+			$('.readme_cont').html(md(r));
+
+		})
+}
 
 
 var nav_collection_show = function(id,show){ 
@@ -89,8 +103,8 @@ var nav_collection_show = function(id,show){
 	window.webui.view_video.is_rendered=false;
 	nav_collection(id,true);
 
-
 }
+
 var nav_collection = function(id,f){
 	if(f===undefined && window.webui.view_video.category_filter!=""){
 		window.webui.view_video.is_rendered=false;

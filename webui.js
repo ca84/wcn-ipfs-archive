@@ -37,6 +37,21 @@ exports.view= {
 	},
 }
 
+exports.view_home= {
+	template_id: "layout-home",
+	target_id: "the_content",
+	container_id: "home_view",
+	is_rendered: false,
+	container: undefined,
+	template: undefined,
+
+	get_data: function(){
+		
+		
+		return {title:"empty"}
+	}
+}
+
 exports.view_video= {
 	template_id: "layout-video",
 	target_id: "the_content",

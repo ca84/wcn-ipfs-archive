@@ -5,6 +5,7 @@ if(typeof window!='undefined'){
   ipfsAPI= window.ipfsAPI;
   ipfs_node=window.ipfs_node;
 }else{
+  console.log("Connecting remote node: ", process.env.IPFS_API_URL);
   ipfsAPI= require('ipfs-api');
   ipfs_node= {
     connection_data: {host: 'localhost', port: '5001', procotol: 'http'},
@@ -12,11 +13,17 @@ if(typeof window!='undefined'){
     id:"",
     swarm_address:[]
   }
+  if(process.env.IPFS_API_URL!==undefined){
+    ipfs_node.connection_data.procotol=process.env.IPFS_API_URL.split(":")[0];
+    ipfs_node.connection_data.host=process.env.IPFS_API_URL.split(":")[1].split("//")[1];
+    ipfs_node.connection_data.port=process.env.IPFS_API_URL.split(":")[2];
+  }
+
 }
 
 //var $ = require('jquery-browserify');
 
-var ipfs = ipfsAPI({host: 'localhost', port: '5001', procotol: 'http'})
+var ipfs = ipfsAPI(ipfs_node.connection_data);
 
 
 global.imports_running=0;
@@ -37,14 +44,14 @@ function build_root(mhash,p){
   return ipfs.object.put(new Buffer(JSON.stringify(rf)),'json').chain(function(r){
       //console.log("NEW ROOT: ", r.Hash);
       if(pub)return ipfs.name.publish(r.Hash)
-  });
+  }).catch(function(e){console.log("UPD RT ERR: ", e, rf)});
 }
 
 exports.update_app= function(hash){
   _app_folder_hash=hash;
 }
 
-exports.ipfs_noder_id= function(){
+exports.ipfs_node_id= function(){
   return ipfs.id()
 }
 
@@ -73,21 +80,45 @@ exports.update_collection_categories= function(cname,data){
   //col.manage.update_collection_meta();
 }
 
+var _coll_count=-1;
+exports.isloaded= function(){
+  var res=false;
+  if(_coll_count > 0){
+    res=true;
+    for(c in _collections){
+      if(!_collections[c].manage.isloaded())res=false;
+    }  
+  
+  }
+
+  if(_coll_count == 0){res=true;}
+
+  return res;
+}
+
 
 exports.load_collections= function(sch,id){
   if(ipfs_node.api_access){
     var bff="";
     console.log("      /" + sch + "/" + id + "/.collections.json")
     ipfs.cat("/" + sch + "/" + id + "/.collections.json",function(e,r){
-          //console.log("res :",e)
-      r.on('data',function(d){bff+=d})
-       .on('end',function(){
-          var clls=JSON.parse(bff);
-          clls.forEach(function(c){
-            var cl=exports.collection(c.name,c.title)
-            cl.manage.load_collection(c.hash);
-          })
-        });
+      //console.log("HEHE::: ",e,r);
+      if(r!==undefined && r.Code!=0){
+        r.on('data',function(d){bff+=d})
+         .on('end',function(){
+            var clls=JSON.parse(bff);
+            _coll_count=clls.length;
+            clls.forEach(function(c){
+              var cl=exports.collection(c.name,c.title)
+              cl.manage.load_collection(c.hash);
+            })
+          });
+      }else{
+        _coll_count=0;
+        console.log("No Collection Meta found, starting from scratch..");
+
+      }
+
      })
     ipfs.object.get("/" + sch + "/" + id).then(function(r){
       _app_folder_hash=r.Links.filter(function(x){return x.Name=="app"})[0].Hash;
@@ -127,8 +158,9 @@ exports.update_collections= function(){
 
   return ipfs.add(new Buffer(JSON.stringify(colls)))
     .chain(function(r){
+      //console.log("colls.jsn:", r);
       return build_root(r[0].Hash);
-    });
+    }).catch(function(e){console.log("UPD ERR: ", e)});
 }
 
 
@@ -194,10 +226,15 @@ collection: undefined,
 collection_root_hash: "initial",
 collection_modified: false,
 collection_links:[],
+collection_loaded: false,
 
+isloaded: function(){
+  return this.collection_loaded;
+},
 
 load_collection: function(coll_root_hash){
   this.collection_root_hash=coll_root_hash;
+  //console.log("Loaded coll: ",coll_root_hash);
   if(ipfs_node.api_access){
     this.load_collection_ipfs(coll_root_hash);
   }else{
@@ -213,7 +250,8 @@ load_collection_ipfs: function(coll_root_hash){
      .on('end',function(){
         //console.log("parse :",bff)
         mng.collection.data=JSON.parse(bff);
-        //console.log("Loaded media:",mng.collection.data.media.length);
+        mng.collection_loaded=true;
+        //console.log("Loaded media:",mng.collection.data.media);
       });
    })
 },
@@ -655,7 +693,7 @@ create_media_folder: function(file_hash,fname,fext,meta_hash,mname,meta,poster_h
 
     ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
       var hash=r.Hash;
-      console.log("media folder:",hash);
+      //console.log("media folder:",hash);
 
       var cat="misc";
       var cats=mng.collection.data.categories;
@@ -735,7 +773,7 @@ stage_media_folders_import: function(root,pattrn){
     pstrstrm=fs.createReadStream(pstr);
     ytmobj=require("./" + ytm);
     var sha256=fs.readFileSync(shnt).toString().split("\n")[5].split(":  ")[1];
-    console.log(sha256)
+    //console.log(sha256)
 
     queue.push({stream:mp4strm, meta:ytmobj, poster:pstrstrm, sha256:sha256})
   });

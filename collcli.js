@@ -4,7 +4,7 @@ collutil = require('./collection-util.js');
 cli.enable('status');
 var loaded=false;
 
-collutil.ipfs_noder_id().then(function(idres){
+collutil.ipfs_node_id().then(function(idres){
 
 
 options = cli.parse({
@@ -19,7 +19,7 @@ options = cli.parse({
 	dironly: 	[ '', 'update directory tree only', 'bool', false ],
 	key: 		[ 'k', 'key', 'string' ],
 	root: 		[ 'r', 'update root and id', 'false', true ]},
-	['get-collection', 'get-mediameta', 'get-mediafile','do','import','update']);
+	['get-collection', 'get-mediameta', 'get-mediafile','import','update']);
 
 cli.main(function(args, options) {
 
@@ -29,7 +29,7 @@ if(options.noload){
 	collutil.load_collections(options.schema,options.id)
 	var i = 0, interval = setInterval(function () { 
     cli.progress(++i / 100);
-    if(collutil.collections().length>0 && i<99)i=99;
+    if(collutil.isloaded() && i<99)i=99;
     if (i === 100) {
         clearInterval(interval);
         loaded=true;
@@ -45,7 +45,9 @@ function mmain(){
 	switch(cli.command) {
     case 'get-collection':
     	cli.debug('CMD: ' + cli.command);
-    	cli.debug('COLL:' + JSON.stringify(collutil.collection(options.key).data,null,1));
+        if(options.collection){
+        	cli.info('COLL:' + JSON.stringify(collutil.collection(options.collection).data,null,1));
+        }else{cli.error('Please provide collection name option ( -c collname )')}
     break;
 
     case 'get-mediameta':
@@ -110,7 +112,7 @@ function mmain(){
     	cli.info("Updating & publish ROOT ( " + options.id + " )");
 		var prm=collutil.update_collections();
 		prm.then(function(x){cli.ok("ROOT updated with " + x.Value + " and published")})
-			.catch(function(e){cli.error("FAILED TO UPDATE:" + e)});
+			.catch(function(e){cli.error("FAILED TO UPDATE: " + e)});
 		}
 
 
@@ -118,6 +120,12 @@ function mmain(){
 
     case 'import':
     	cli.debug('CMD: ' + cli.command);
+        if(options.app && loaded){
+            cli.info('Updating /app folder with ' + options.app);
+            collutil.update_app(options.app);
+            //update_root();
+        }
+
     	if(options.path && options.pattern && options.collection && loaded){
     		cli.info("Adding media from " + options.path + options.pattern + "* to " + options.collection);
     		coll=collutil.collection(options.collection); 
@@ -152,7 +160,7 @@ function mmain(){
 	    	cli.info("Updating & publish ROOT (" + options.id + ")");
 			var prm=collutil.update_collections();
 			prm.then(function(x){cli.ok("ROOT updated with " + x.Value + " and published")})
-			.catch(function(e){cli.error("FAILED TO UPDATE:" + e)});
+			.catch(function(e){cli.error("FAILED TO UPDATE: " + e)});
 		}
 
     break;
@@ -169,4 +177,6 @@ function mmain(){
 
 
 
-}).catch(function(e){cli.error("FAILED TO CONNECT IPFS API:" + e)});
+}).catch(function(e){cli.error("FAILED TO CONNECT IPFS API:" + e)
+                    cli.info("You can provide a alternative address for the API with the environment variable IPFS_API_URL")
+                    cli.info("       Example: IPFS_API_URL=\"http://superhost:5001\" ./collcli.js ")});

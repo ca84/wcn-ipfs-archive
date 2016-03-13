@@ -263,6 +263,7 @@ load_collection_http: function(coll_root_hash){
       dataType: "json"})
   .then(function(r){
     mng.collection.data=r;
+    mng.collection_loaded=true;
     console.log("res",r)
 
   });

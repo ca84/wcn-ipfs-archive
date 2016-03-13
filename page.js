@@ -56,11 +56,15 @@ $('document').ready(function() {
 	});
 
 	var waitFroCollectionToLoad= setInterval(function () {
-		if(window.collutil.collections().length>0){
+		if(window.collutil.isloaded()){
 			clearInterval(waitFroCollectionToLoad);
-			setup_router();			
+			console.log("init ROUTER");
+			window.setup_router();		
 		}
-	},100)
+	},200)
+
+	//ugly hack: init router anyway
+	setInterval(function () {window.setup_router();},1500);
 
 
 
@@ -69,7 +73,7 @@ $('document').ready(function() {
 
 //var route_prefix = "app/"
 
-var setup_router = function(){
+window.setup_router = function(){
       // define the routing table.
       window.webui.view.add_view(window.webui.view_home);
       window.webui.view.add_view(window.webui.view_video);

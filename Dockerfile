@@ -31,6 +31,7 @@ ADD ./ /home/colman/
 
 #ADD entrypoint.sh /bin/entrypoint.sh
 
-#ENV API_ORIGIN "https://api.ipfs.raincloud.ch/"
+# IPFS AIP Endpoint (change to point to your ipfs node)
+ENV IPFS_API_URL "http://ipfs-archive.rain.core:5001"
 
 #ENTRYPOINT ["/bin/entrypoint.sh"]

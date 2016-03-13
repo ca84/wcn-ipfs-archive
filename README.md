@@ -5,7 +5,26 @@ This is a early PoC hack of a completely decentralized content archiving and dis
 Main focus for now is to have a efficient way of building and maintaining a browse and watchable archive of all video content produced by WCN contributers (other types of content like audio or git repos may follow later). A additionally early target is making it really easy for supporters to help host/pin selected parts or the entire archive.
 
 
-## Current State
+## View Archive / IPFS deployments
+The latest "stable" version will always be deployed to **/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja**
+
+- with a local IPFS node running, go to http://localhost:8080/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja
+- without local node you can go to https://ipfs.io/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja or https://ipfs.raincloud.ch/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja
+
+This gives you a brows-able folder structure of the archive (as provided by the default IPFS daemon). For a graphic presentation open the top-level folder "/app" which will start the archive-browser app.
+
+
+*Just for fun I try to not start over with the data-archive itself, as I built in a history reference that points to the last state and it would be nice to see the archives history going back to the early development stage.*
+
+### Addidtional Addresses
+For development and for loading the archive I use different IPNS addresse and publish them to the main address above whenever there has been usefull progress.
+
+- **/ipns/QmY1XYR9PhF5XzveWiAqjPfNN5tEo1gd12zRYHuu5kMosE** Browser App Development
+- **/ipns/QmS9mdKAihQaqGuLgzAESCSbFDCpoRVFqQinua6Ve7ARCH** Archive Loading
+
+
+
+## Current State of Development
 Here a brief overview what "it" does so far:
 
 - main library collection-util.js:
@@ -19,18 +38,6 @@ Here a brief overview what "it" does so far:
   - browser app detects and switches between [full-mode and gateway-mode](#full-mode-vs-gateway-mode)
 - multi-collections structure in place (not practically tested yet)
 - tested with current versions of FireFox/Iceweasel and Chrome (IE probably broken)
-
-## View Demo/Test deployment
-A demo archive with a few videos is published under **/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja**
-
-- with a local IPFS node running, go to http://localhost:8080/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja
-- without local node you can go to https://ipfs.io/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja or https://ipfs.raincloud.ch/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja
-
-This gives you a brows-able folder structure of the archive (as provided by the default IPFS daemon). For a graphic presentation open the top-level folder "/app" which will start the archive-browser app. (go to the left with the mouse to make the menu appear and select wcn shows,.. there is no home page yet, so initially you end up in a empty page)
-
-*You might notice that some videos don't have thumbnail,.. these videos where imported at a earlier stage, when the code for the "poster.jpg" wasn't in place - when I start the mass import of all videos, this videos will be updated.*
-
-*Just for fun I try to not start over with the data-archive itself, as I built in a history mechanism and it would be nice to see the archives history going back to the early development stage.*
 
 ## Instructions
 
@@ -87,9 +94,19 @@ Or to set it for the duration of the Terminal session:
 
 The remote IPFS node needs of course to accept your connection (more on that will be added later). 
 
-## code quality & contribution
-Since this is my first bigger Node project, don't expect the code quality to be shiny. I'm still in the progress of learning many of the common JS patterns (liking it more and more).
-As this is pretty raw PoC it is probably no fun to contribute right now (to much things still changing all the time), nevertheless if you have any input, let me know.
+### Docker
+The proect comes now with a Dockerfile. The docker is for the app only and does not contain ipfs-go. At this stage the docker is mainly used for importing, but can also be used to play with the code without having to setup a Node/npm environment.
+
+Build the Docker:
+
+	git clone https://github.com/m0se/wcn-ipfs-archive
+	cd wcn-ipfs-archive
+	docker build -t ipfscollmanager .
+
+Run the Docker:
+
+	docker run -ti -v /pub/video_data:/home/colman/data -e IPFS_API_URL "http://ipfs-archive.rain.core:5001" ipfscollmanager
+
 
 
 ## full-mode vs. gateway-mode
@@ -108,6 +125,12 @@ To make the browser app work via. public gateways, meta/structure data gets publ
 So where the browser app in full-mode calls the IPFS API to navigate the collection, it will fetch the JSON files in gateway-mode to have the information about the collection/archive.
 
 This distinction gets more relevant, as the developments progresses. The plan is to have all "read-only" features work in full and gateway-mode, but when we come to the "write" features like add or modify to the archive, this will only be possible in the full-mode (threw the API of your own local IPFS Node).  
+
+
+## code quality & contribution
+Since this is my first bigger Node project, don't expect the code quality to be shiny. I'm still in the progress of learning many of the common JS patterns (liking it more and more).
+As this is pretty raw PoC it is probably no fun to contribute right now (to much things still changing all the time), nevertheless if you have any input, let me know.
+
 
 ## Future Plans & Ideas
 Some of the next targets with this project are:

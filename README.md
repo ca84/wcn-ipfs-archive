@@ -75,7 +75,17 @@ The WNC videos are downloaded directly from Youtube with [youtube-dl](https://gi
 
 The "poster.jpg" (referenced in the meta) is downloaded as well and put in the videos folder (not done by youtube-dl).
 
+### Connect to remote node
+For connecting to a remote IPFS node the connection URL have to be set in the environment variable IPFS_API_URL:
 
+	IPFS_API_URL="http://corenode5:5001" ./collcli.js get-collection -c wcnshows
+
+Or to set it for the duration of the Terminal session:
+
+	export IPFS_API_URL="http://corenode5:5001" 
+	./collcli.js get-collection -c wcnshows
+
+The remote IPFS node needs of course to accept your connection (more on that will be added later). 
 
 ## code quality & contribution
 Since this is my first bigger Node project, don't expect the code quality to be shiny. I'm still in the progress of learning many of the common JS patterns (liking it more and more).

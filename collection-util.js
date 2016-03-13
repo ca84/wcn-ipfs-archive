@@ -764,7 +764,7 @@ stage_media_folders_import: function(root,pattrn){
   var lst=fs.readdirSync(root).filter(function(f){return f.substr(0,pattrn.length)==pattrn;});
   //console.log(lst,root,pattrn.length,fs.readdirSync(root).filter(function(f){return f.substr(0,6)=="201408";}));
   lst.forEach(function(x){
-    var mp4=root+ "/" + x + "/" + fs.readdirSync("tmp/"+x).filter(function(f){return f.substr(f.length-4,4)==".mp4"})[0];
+    var mp4=root+ "/" + x + "/" + fs.readdirSync(root+x).filter(function(f){return f.substr(f.length-4,4)==".mp4"})[0];
     var ytm=root+ "/" + x + "/YoutubeInfo.json"
     var pstr=root+ "/" + x + "/poster.jpg"
     var shnt=root+ "/" + x + "/ShowNotes.md"

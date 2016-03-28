@@ -1,0 +1,42 @@
+[Unit]
+Description=ipfs-node 
+BindsTo=ipfs-node.service
+After=ipfs-node.service
+
+[Service]
+# service name / container name / container hostname
+Environment="RAIN_SERVICE_NAME=ipfs-node"
+
+# local http port
+Environment="RAIN_SERVICE_PORT=8080"
+
+# proxy domain to setup
+Environment="RAIN_PROXY_DOMAIN=ipfs.raincloud.ch"
+
+# proxy template: secure, insecure, secure_noauth, secure_test, secure_noauth_test
+Environment="RAIN_PROXY_TEMPLATE=secure_noauth"
+
+# ldap auth group: alluser, coreadmin, none
+Environment="RAIN_PROXY_AUTH=alluser"
+
+# delay reg until we see the docker
+ExecStartPre=/bin/sh -c "while [ $(docker ps|grep $RAIN_SERVICE_NAME|wc -l) -eq 0 ];do \
+                                echo waiting for docker $RAIN_SERVICE_NAME;sleep 2;done"
+
+ExecStart=/bin/sh -c "while true; do \
+                        etcdctl set --ttl 60 /skydns/core/rain/${RAIN_SERVICE_NAME} \
+                        '{\"host\":\"'$(/usr/bin/docker inspect $RAIN_SERVICE_NAME|grep \"IPAddress\"|cut -d '\"' -f 4|grep .|tail -1)'\",\"priority\":50}'; \
+                        etcdctl set --ttl 60 /skydns/core/rain/ipfs-node-api \
+                        '{\"host\":\"'$(/usr/bin/docker inspect $RAIN_SERVICE_NAME|grep \"IPAddress\"|cut -d '\"' -f 4|grep .|tail -1)'\",\"priority\":50}'; \
+                        etcdctl set --ttl 60 /skydns/core/rain/ext/${RAIN_SERVICE_NAME} \
+			'{\"host\":\"'$(hostname -i|cut -d ' ' -f 1)'\",\"priority\":50}'; \
+			etcdctl set --ttl 60 /rainproxy/${RAIN_SERVICE_NAME} \
+                        '{\"domain\":\"'${RAIN_PROXY_DOMAIN}'\",\"host\":\"'${RAIN_SERVICE_NAME}.rain.core'\",\"port\":'${RAIN_SERVICE_PORT}',\"auth\":\"'${RAIN_PROXY_AUTH}'\",\"template\":\"'${RAIN_PROXY_TEMPLATE}'\"}'; \
+                        sleep 45;done"
+
+ExecStop=/usr/bin/etcdctl rm /skydns/core/rain/ext/${RAIN_SERVICE_NAME}
+ExecStop=/usr/bin/etcdctl rm /skydns/core/rain/${RAIN_SERVICE_NAME}
+ExecStop=/usr/bin/etcdctl rm /skydns/core/rain/ipfs-node-api
+ExecStop=/usr/bin/etcdctl rm /rainproxy/${RAIN_SERVICE_NAME}
+[X-Fleet]
+MachineOf=ipfs-node.service

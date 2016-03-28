@@ -18,6 +18,8 @@ options = cli.parse({
 	category: 	[ '', 'category JSON-file', 'file' ],
 	dironly: 	[ '', 'update directory tree only', 'bool', false ],
 	key: 		[ 'k', 'key', 'string' ],
+    meta:       [ 'm', 'media meta for update', 'string', '{}'],
+    queue_size: [ 'q', 'Import queue limit', 'int', 5 ],
 	root: 		[ 'r', 'update root and id', 'false', true ]},
 	['get-collection', 'get-mediameta', 'get-mediafile','import','update']);
 
@@ -36,7 +38,7 @@ if(options.noload){
         cli.ok('Loaded collections: ' + JSON.stringify(collutil.collections().map(function(x){return {title:x.data.title, media_count:x.data.media.length}})));
         mmain();
     }
-}, 250);
+}, 1100);
 }else{
 	loaded=true;
 }
@@ -74,7 +76,8 @@ function mmain(){
     	if(options.app && loaded){
     		cli.info('Updating /app folder with ' + options.app);
     		collutil.update_app(options.app);
-    		update_root();
+
+            if(!options.key && !options.category)update_root();
     	}
 
     	if(options.category && options.collection && loaded){
@@ -103,7 +106,42 @@ function mmain(){
 				.catch(function(e){cli.error("FAILED TO UPDATE:" + e)});
 
     	}
-    	cli.debug(options.dironly);
+        if(options.meta && options.key && options.collection && loaded){
+            cli.info("Updating Meta for folder: " + options.key);
+            coll=collutil.collection(options.collection);
+            if(options.key=="all"){
+                coll.manage.recreate_all_media_folder()
+                    .then(function(e){
+                        cli.ok("folder created");
+                        coll.manage.collection_modified=true;
+                        coll.manage.update_collection()
+                            .then(function(x){
+                                cli.info("Collection Updated: " + x.Name + " ( " + x.Hash + " )")
+                                update_root();
+                            })
+                            .catch(function(e){cli.error("FAILED TO UPDATE:" + e)});
+                    })
+            }else{
+                mt=coll.data.media.filter(function(x){return x.folder_hash==options.key})[0];
+                
+                cli.debug("media meta: " + JSON.stringify(mt));
+                coll.manage.recreate_media_folder(mt, JSON.parse(options.meta))
+                    .then(function(r){
+
+                        cli.ok("folder created");
+                        coll.manage.collection_modified=true;
+                        coll.manage.update_collection()
+                            .then(function(x){
+                                cli.info("Collection Updated: " + x.Name + " ( " + x.Hash + " )")
+                                update_root();
+                            })
+                            .catch(function(e){cli.error("FAILED TO UPDATE:" + e)}); 
+                    })       
+
+            }
+
+
+        }
 
     	//collutil.collection("wcnshows").data.description="All Youtube uploads of World Crypto Network, bla bla";
     	//collutil.collection("wcnshows").data.type="video";
@@ -130,11 +168,18 @@ function mmain(){
     		cli.info("Adding media from " + options.path + options.pattern + "* to " + options.collection);
     		coll=collutil.collection(options.collection); 
     		if(coll.manage.stage_media_folders_import(options.path, options.pattern.toString())){
-	    		cli.info("Queue: " + coll.manage.import_queue);
+
+                for(i=0;i<options.queue_size;i++){
+                    if(coll.manage.pre_import_queue.length > 0){
+                        coll.manage.import_queue.push(coll.manage.pre_import_queue.pop());
+                    }
+                }
+
+	    		cli.info("Current Run: " + coll.manage.import_queue.length + " Remaining Queue: " + coll.manage.pre_import_queue.length);
 	    		var p=coll.manage.run_import_queue();
 	    		cli.debug("runQ prms:",p);
 	    		p.then(function(r){
-			        cli.ok('Import done ');
+			        cli.ok('Import done, updating collection now.');
     				//coll.manage.update_all_folder(coll.data.media)
     				coll.manage.collection_modified=true;
     				coll.manage.update_collection()
@@ -159,7 +204,13 @@ function mmain(){
     	function update_root(){
 	    	cli.info("Updating & publish ROOT (" + options.id + ")");
 			var prm=collutil.update_collections();
-			prm.then(function(x){cli.ok("ROOT updated with " + x.Value + " and published")})
+			prm.then(function(x){
+                cli.ok("ROOT updated with " + x.Value + " and published")
+                if(coll.manage.pre_import_queue.length > 0){
+                    options.id=x.Value;
+                    mmain();
+                }
+            })
 			.catch(function(e){cli.error("FAILED TO UPDATE: " + e)});
 		}
 

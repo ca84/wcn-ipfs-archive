@@ -155,3 +155,17 @@ exports.view_nav= {
 		return this.data;
 	}
 }
+
+exports.view_pinmgt= {
+	template_id: "layout-pinmgt",
+	target_id: "the_content",
+	container_id: "pinmgt_view",
+	is_rendered: false,
+	container: undefined,
+	template: undefined,
+	data: {},
+
+	get_data: function(){
+		return this.data;
+	}
+}

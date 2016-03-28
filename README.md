@@ -21,7 +21,18 @@ For development and for loading the archive I use different IPNS addresse and pu
 
 - **/ipns/QmY1XYR9PhF5XzveWiAqjPfNN5tEo1gd12zRYHuu5kMosE** Browser App Development
 - **/ipns/QmS9mdKAihQaqGuLgzAESCSbFDCpoRVFqQinua6Ve7ARCH** Archive Loading
+- Archive Node1 **/ipns/QmX3LsxW69VHea43xvfWHVXC5yviHhYSbRjg9acnz5aaN1** (150GB)
+- Archive Node2 **/ipns/Qme3XmB651ZYCkFTYGh69pJkXGQJeWYDateeWnxfAFaaN2** (20GB)
+- Archive Node3 **/ipns/QmVfwJUWnj7GAkQtV4cDVrNDnZEwi4oxnyZaJc7xY7zaN3** (empty)
+- Archive Node4 **/ipns/QmS1HnL1cqXzzH53cpVavpjEEVLDEgeKBP5QLHN9nPxaN4** (empty)
 
+### Current state of collection
+
+The Archive works up to about 200 WCN videos for now (2014-01 - 2014-07), after that I start to face bad response times and other strage exceptions with a single IPFS node (starting at +150GB).
+
+To mitigate that I started to split the collection over multible nodes, which basically works so far, but there are still issues with importing more videos.
+
+So far the my conclusion is, that getting the media folder sitze of each item via ipfs.stat after a import run, seems to cause the issue. Therefore I now starting to remodel the code to keep the folder sizes in the metadata, so that not each media folder has to be touched while finalizing a import run. *Partialy implemented* 
 
 
 ## Current State of Development
@@ -32,9 +43,10 @@ Here a brief overview what "it" does so far:
   - dynamic building of IPFS folder structures (all, by show, by date)
   - generate and store JSON files with meta for gateway-mode
   - deploy the browser app to IPFS 
-- CLI fronted (very limited for now)
+  - update meta data
+  - recreate media folder (with size in meta or other meta changes) 
+- CLI fronted (only usable with understnading of the code)
 - Video-Collection Browser App
-  - wirks some random WCN videos
   - browser app detects and switches between [full-mode and gateway-mode](#full-mode-vs-gateway-mode)
 - multi-collections structure in place (not practically tested yet)
 - tested with current versions of FireFox/Iceweasel and Chrome (IE probably broken)
@@ -107,6 +119,8 @@ Run the Docker:
 
 	docker run -ti -v /pub/video_data:/home/colman/data -e IPFS_API_URL "http://ipfs-archive.rain.core:5001" ipfscollmanager
 
+
+*For more on server side deployment check the "deployment" subfolder in this repo*
 
 
 ## full-mode vs. gateway-mode

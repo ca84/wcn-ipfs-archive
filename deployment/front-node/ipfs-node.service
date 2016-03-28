@@ -1,0 +1,29 @@
+[Unit]
+Description=IPFS Node and Gateway
+
+Requires=mnt-clusterdata.mount
+After=mnt-clusterdata.mount
+RequiresMountsFor=/mnt/clusterdata
+
+Requires=skynet-dns.service
+After=skynet-dns.service 
+
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+TimeoutStartSec=0
+EnvironmentFile=-/mnt/clusterdata/meta/app.env
+ExecStartPre=-/usr/bin/docker kill ipfs-node
+ExecStartPre=-/usr/bin/docker rm ipfs-node
+
+ExecStartPre=-/usr/bin/docker pull ${IPFS_DOCKER}
+
+ExecStart=/usr/bin/docker run --rm --name ipfs-node -p 4001:4001 -v ${IPFS_DATA}:/data -e CORENODE=%H ${IPFS_DOCKER}
+
+ExecStop=/usr/bin/docker stop --time 30 ipfs-node
+
+[X-Fleet]
+Conflicts=ipfs-node*.service
+MachineMetadata="site=dczhch"

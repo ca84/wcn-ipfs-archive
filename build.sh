@@ -12,6 +12,6 @@ node_modules/.bin/browserify page.js -d -o dist/app/bundle.js
 
 hsh=`ipfs add -r dist/app|tail -1|awk '{print $2}'`
 echo New App-dir Hash: $hsh
-./collcli.js update -a $hsh   #-s ipfs -i QmaKpyfGXofwkoiijmr7kZVUmJBYW4o86PPK9YtVoqiuyo  
+./collcli.js update -a $hsh -s ipfs -i QmW3owmRE6EjuyKjeLucSV9w2sBSu9PGsa4jdJuNi86fGY  
 
 ipfs name resolve -n QmY1XYR9PhF5XzveWiAqjPfNN5tEo1gd12zRYHuu5kMosE

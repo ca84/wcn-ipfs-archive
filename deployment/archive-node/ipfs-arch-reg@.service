@@ -1,0 +1,26 @@
+[Unit]
+Description=ipfs-archive 
+BindsTo=ipfs-arch-node@%i.service
+After=ipfs-arch-node@%i.service
+
+[Service]
+# service name / container name / container hostname
+Environment="RAIN_SERVICE_NAME=ipfs-arch-n%i"
+
+
+# delay reg until we see the docker
+ExecStartPre=/bin/sh -c "while [ $(docker ps|grep $RAIN_SERVICE_NAME|wc -l) -eq 0 ];do \
+                                echo waiting for docker $RAIN_SERVICE_NAME;sleep 2;done"
+
+ExecStart=/bin/sh -c "while true; do \
+                        etcdctl set --ttl 60 /skydns/core/rain/${RAIN_SERVICE_NAME} \
+                        '{\"host\":\"'$(/usr/bin/docker inspect $RAIN_SERVICE_NAME|grep \"IPAddress\"|cut -d '\"' -f 4|grep .|tail -1)'\",\"priority\":50}'; \
+                        etcdctl set --ttl 60 /skydns/core/rain/ext/${RAIN_SERVICE_NAME} \
+			'{\"host\":\"'$(hostname -i|cut -d ' ' -f 1)'\",\"priority\":50}'; \
+                        sleep 45;done"
+
+ExecStop=/usr/bin/etcdctl rm /skydns/core/rain/ext/${RAIN_SERVICE_NAME}
+ExecStop=/usr/bin/etcdctl rm /skydns/core/rain/${RAIN_SERVICE_NAME}
+
+[X-Fleet]
+MachineOf=ipfs-arch-node@%i.service

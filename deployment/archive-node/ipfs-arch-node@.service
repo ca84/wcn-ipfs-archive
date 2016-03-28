@@ -1,0 +1,30 @@
+[Unit]
+Description=IPFS Archive Node
+
+Requires=mnt-ipfsarchive.mount
+After=mnt-ipfsarchive.mount
+RequiresMountsFor=/mnt/ipfsarchive
+
+Requires=skynet-dns.service
+After=skynet-dns.service 
+
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+TimeoutStartSec=0
+EnvironmentFile=-/mnt/ipfsarchive/meta/app.env
+ExecStartPre=-/usr/bin/docker kill ipfs-arch-n%i
+ExecStartPre=-/usr/bin/docker rm ipfs-arch-n%i
+
+ExecStartPre=-/usr/bin/docker pull ${IPFS_DOCKER}
+
+ExecStart=/usr/bin/docker run --rm --name ipfs-arch-n%i -m 512m -p :4001 -v ${IPFS_ARCHIVE_DATA}/arch-node%i:/data -e CORENODE=%H ${IPFS_DOCKER}
+
+ExecStop=/usr/bin/docker stop --time 30 ipfs-arch-n%i
+
+[X-Fleet]
+#Conflicts=ipfs-node*.service
+Conflicts=ipfs-arch-node@%i*.service
+MachineMetadata="site=dczhch"

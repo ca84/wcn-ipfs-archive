@@ -64,7 +64,7 @@ $('document').ready(function() {
 	},200)
 
 	//ugly hack: init router anyway
-	setInterval(function () {window.setup_router();},1500);
+	var hardInit= setInterval(function () {window.setup_router();clearInterval(hardInit);},1500);
 
 
 
@@ -76,6 +76,7 @@ $('document').ready(function() {
 window.setup_router = function(){
       // define the routing table.
       window.webui.view.add_view(window.webui.view_home);
+      window.webui.view.add_view(window.webui.view_pinmgt);
       window.webui.view.add_view(window.webui.view_video);
       window.webui.view.add_view(window.webui.view_video_info);
       window.webui.view.add_view(window.webui.view_nav);
@@ -85,7 +86,8 @@ window.setup_router = function(){
       	'/': nav_home,
         '/collection/:id': nav_collection,
         '/collection/:id/:show': nav_collection_show,
-        '/info/:id': nav_video_info
+        '/info/:id': nav_video_info,
+        '/pinmanager': nav_pin_manager
       };
 
 
@@ -145,4 +147,9 @@ var nav_video_info = function(id){
 	}else{
 		setTimeout(nav_video_info,20);
 	}
+}
+
+
+var nav_pin_manager = function(){
+	window.webui.view.set_view("layout-pinmgt");
 }

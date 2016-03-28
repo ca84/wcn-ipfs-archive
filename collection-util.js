@@ -87,6 +87,7 @@ exports.isloaded= function(){
     res=true;
     for(c in _collections){
       if(!_collections[c].manage.isloaded())res=false;
+      
     }  
   
   }
@@ -318,7 +319,8 @@ update_collection_metadata: function(){
     var meta=new Buffer(JSON.stringify(mng.collection.data));
     ipfs.add(meta,function(e,r){
 
-      //console.log("created root meta:",r[0].Hash);
+      //console.log(e);
+      console.log("collection meta added: ",r[0].Hash);
       //mng.update_collection_root({Name:".collection.json",Hash:r[0].Hash});
       resolve({Name:".collection.json",Hash:r[0].Hash});
     })
@@ -355,7 +357,7 @@ update_collection: function(){
       var folder={Links:r,Data:"\u0008\u0001"};
       ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
           var hash=r.Hash;
-          //console.log("COLLECTION root folder:",hash);
+          console.log("COLLECTION root folder:",hash);
           mng.collection_root_hash=hash;
           resolve({Name:mng.collection.data.name,Hash:hash});
       });
@@ -393,7 +395,7 @@ update_media_all_folders: function(){
           var hash=r.Hash;
           resolve({Name:"all",Hash:hash});
           //mng.update_collection_root({Name:"all",Hash:hash});
-          //console.log("all folder:",hash);
+          console.log("all folder created: ",hash);
         });
       });
     
@@ -510,7 +512,7 @@ update_media_date_folders: function(){
         ipfs.object.put(new Buffer(JSON.stringify(topfolder)),'json',function(e,r){
           var hash=r.Hash;
 
-          console.log(JSON.stringify(r,null,1));
+          console.log("by date folder created: ",r.Hash);
           resolve({Name:"by date",Hash:hash});
 
         });
@@ -615,6 +617,7 @@ update_media_category_folders: function(){
 
           ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
             var hash=r.Hash;
+            console.log("by show subs created: ",hash);
             resolve({Name:"by show",Hash:hash});
 
           });
@@ -630,56 +633,76 @@ update_media_category_folders: function(){
   
 },
 
-//OBSOLETE
-//update_by_show_folder
-//update_by_date_folder
-/*
-update_all_folder: function(mfolders){
-  var mng = this.collection.manage;
-  var folder={Links:[],Data:"\u0008\u0001"};
-  var prms=[];
 
-  for(var i=0;i<mfolders.length;i++){
-    var mf=mfolders[i];
-    prms.push(ipfs.object.stat(mf.folder_hash));
-  }
-
-  Promise.all(prms).then(function(r){
-      for(var j=0;j<r.length;j++){
-      var mf=mfolders[j];
-        folder.Links.push({
-          Name: mf.title,
-          Hash: mf.folder_hash,
-          Size:r[j].CumulativeSize
-        });
-      }
-      ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
-        var hash=r.Hash;
-        mng.update_collection_root({Name:"all",Hash:hash});
-        //console.log("all folder:",hash);
-      });
-    });
-}, */
-
-add_to_collection: function(title,mhash,fhash,date,cat){
-  var mdata=this.collection.data.media.filter(function(x){return x.media_hash!=mhash})
-  mdata.push(
-   {title: title, media_hash:mhash, folder_hash:fhash, date:date , category:cat}
-  );
+add_to_collection: function(title,mhash,fhash,date,cat,fsize){
+  var mdata=this.collection.data.media.filter(function(x){return x.media_hash!=mhash}) // remove current if existing
+  newmeta={title: title, media_hash:mhash, folder_hash:fhash, folder_size:fsize, date:date , category:cat}
+  mdata.push(newmeta);
+  console.log("new coll meta: ", newmeta);
   this.collection.data.media=mdata;
-  global.imports_running--;
+  if(global.imports_running > 0)global.imports_running--;
 }, 
+
+// Metaupdate recreate existing media folder with new logic
+recreate_all_media_folder: function(){
+  console.log("call cr all")
+  var mng = this.collection.manage;
+  return new Promise(function(rslv, reject) {
+    var prms=[];
+    console.log("med:", mng.collection.data.media.length)
+    mng.collection.data.media.forEach(function(md){
+      console.log("pprms:", md);
+      prms.push(mng.recreate_media_folder(md,{}))
+    });
+    console.log(prms)
+    Promise.all(prms).then(function(r){
+      rslv();
+    });
+
+  });
+}, 
+
+// Metaupdate recreate existing media folder with new logic
+recreate_media_folder: function(m,new_meta){
+  var mng = this.collection.manage;
+  var cmeta=m;
+  var nmeta=new_meta;
+  
+  return new Promise(function(reslv, reject) {
+    global.imports_running++;
+    ipfs.object.get(cmeta.folder_hash).then(function(r){
+      var old_folder=r;
+      var phash = r.Links.filter(function(x){return x.Name="poster.jpg"})[0].Hash //get phash
+      //console.log("get meta for ", cmeta.folder_hash);
+      exports.load_media_meta(cmeta.folder_hash).then(function(mt){
+        var mmeta=Object.assign(mt,nmeta);
+        //console.log(mmeta)
+        //file_hash,poster_hash,meta_obj,sha256,yt
+        mng.create_meta_data(cmeta.media_hash, phash, mmeta, mmeta.mediafile_sha256, false) 
+      
+      }).catch(function(e){console.log("ERR:", e)});
+    });
+    interv = setInterval(function () {
+      if(global.imports_running <= 0){
+        clearInterval(interv);
+        reslv();
+      }
+    },100);    
+
+  });
+},
+
 
 // Step 3 create folder for media+meta
 create_media_folder: function(file_hash,fname,fext,meta_hash,mname,meta,poster_hash){
   
-
-  console.log("Create media folder for:",fname);
+  console.log("Create media folder for:     ",fname);
   var nono=["/","#","?","|",":"];
   var pp=fname;
   for(var i=0;i<nono.length;i++){pp=pp.split(nono[i]).join(" ");}
   var title=pp;
   var mng = this.collection.manage;
+  var sz=0;
 
   Promise.all([
       ipfs.object.stat(file_hash),
@@ -691,6 +714,8 @@ create_media_folder: function(file_hash,fname,fext,meta_hash,mname,meta,poster_h
           {Name:"poster.jpg",Hash:poster_hash,Size:r[1].CumulativeSize},
           {Name:mname,Hash:meta_hash,Size:r[2].CumulativeSize}
       ],Data:"\u0008\u0001"};
+
+      sz = r[0].CumulativeSize + r[1].CumulativeSize + r[2].CumulativeSize;
 
     ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
       var hash=r.Hash;
@@ -707,7 +732,8 @@ create_media_folder: function(file_hash,fname,fext,meta_hash,mname,meta,poster_h
           }
         }
       }
-      mng.add_to_collection(title,file_hash,hash,meta.publish_date,cat);
+      console.log("new folder hash: ", hash);
+      mng.add_to_collection(title,file_hash,hash,meta.publish_date,cat,sz);
 
     });
   
@@ -716,18 +742,22 @@ create_media_folder: function(file_hash,fname,fext,meta_hash,mname,meta,poster_h
 },
 
 // Step 2 transform yt json and add to IPFS
-create_meta_data: function(file_hash,poster_hash,meta_obj,sha256){
+create_meta_data: function(file_hash,poster_hash,meta_obj,sha256,yt){
   var m={};
-  m.publish_date        = new Date(meta_obj.upload_date.substr(0,4),parseInt(meta_obj.upload_date.substr(4,2))-1,meta_obj.upload_date.substr(6,2));
-  m.title               = meta_obj.fulltitle;
-  m.media_type           = "video";
-  m.file_type           = meta_obj.ext;
-  m.description         = meta_obj.description;
-  m.resolution          = {height:meta_obj.height, width:meta_obj.width};
-  m.youtube_uploader    = meta_obj.uploader;
-  m.youtube_id          = meta_obj.id;
-  m.mediafile_sha256    = sha256;
-  
+  if(yt){ // get data from youtube meta file
+    m.publish_date        = new Date(meta_obj.upload_date.substr(0,4),parseInt(meta_obj.upload_date.substr(4,2))-1,meta_obj.upload_date.substr(6,2));
+    m.title               = meta_obj.fulltitle;
+    m.media_type           = "video";
+    m.file_type           = meta_obj.ext;
+    m.description         = meta_obj.description;
+    m.resolution          = {height:meta_obj.height, width:meta_obj.width};
+    m.youtube_uploader    = meta_obj.uploader;
+    m.youtube_id          = meta_obj.id;
+    m.mediafile_sha256    = sha256;
+  }else{ // use existing meta
+    m=meta_obj;
+  }
+
   var meta_file=new Buffer(JSON.stringify(m));
   var mng = this.collection.manage;
   ipfs.add(meta_file,function(e,r){
@@ -750,12 +780,13 @@ import_media_file: function(stream, pstream, meta_obj, sha256){
     var hash=r[0].Hash;
     //console.log("Added media file:",hash);
     ipfs.add(pstream,function(e,r){
-      mng.create_meta_data(hash,r[0].Hash,meta_obj,sha256);
+      mng.create_meta_data(hash,r[0].Hash,meta_obj,sha256,true);
     });
   })
 
 },
 
+pre_import_queue:[],
 import_queue:[],
 
 stage_media_folders_import: function(root,pattrn){
@@ -778,13 +809,13 @@ stage_media_folders_import: function(root,pattrn){
 
     queue.push({stream:mp4strm, meta:ytmobj, poster:pstrstrm, sha256:sha256})
   });
-  this.import_queue=queue;
+  this.pre_import_queue=queue;
   return queue.length>0;
 },
 
 run_queue_item:function(){
       var itm=this.import_queue.pop();
-      console.log("start media file import of ", itm.meta.title);
+      console.log("Start media file import of:  ", itm.meta.title);
       this.import_media_file(itm.stream,itm.poster,itm.meta,itm.sha256);
 },
 

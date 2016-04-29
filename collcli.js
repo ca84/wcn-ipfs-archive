@@ -21,7 +21,7 @@ options = cli.parse({
     meta:       [ 'm', 'media meta for update', 'string', '{}'],
     queue_size: [ 'q', 'Import queue limit', 'int', 5 ],
 	root: 		[ 'r', 'update root and id', 'false', true ]},
-	['get-collection', 'get-mediameta', 'get-mediafile','import','update']);
+	['get-collection', 'get-mediameta', 'get-mediafile','import','update','pin-meta']);
 
 cli.main(function(args, options) {
 
@@ -53,13 +53,31 @@ function mmain(){
     break;
 
     case 'get-mediameta':
-    	cli.debug('CMD: ' + cli.command);
-    	if(options.key){
-    		collutil.load_media_meta(options.key)
-    			.then(function(r){
-    				cli.info("media meta: " + JSON.stringify(r));
-    			});
-    	}
+        cli.debug('CMD: ' + cli.command);
+        if(options.key){
+            collutil.load_media_meta(options.key)
+                .then(function(r){
+                    cli.info("media meta: " + JSON.stringify(r));
+                });
+        }
+    break;
+
+    case 'pin-meta':
+        cli.debug('CMD: ' + cli.command);
+        var coll=collutil.collection(options.collection); 
+        if(options.collection && loaded){
+            cli.info("Start PiNNING");
+            coll.manage.pin_collection_metadata()
+                .then(function(r){           
+                    cli.info("PiNNING DONE");
+
+                })
+                .catch(function(r){           
+                    cli.error("PiNNING Fail - " + r);
+                });
+
+
+        }
     break;
 
     case 'get-mediafile':

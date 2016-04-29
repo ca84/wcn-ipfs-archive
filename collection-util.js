@@ -29,6 +29,7 @@ var ipfs = ipfsAPI(ipfs_node.connection_data);
 global.imports_running=0;
 global.imports_max_paralell=2;
 global.fcrcnt=0;
+global.folderbuilding_running=0;
 
 var _root_folder={Links:[],Data:"\u0008\u0001"};
 var _app_folder_hash="";
@@ -252,6 +253,7 @@ load_collection_ipfs: function(coll_root_hash){
      .on('end',function(){
         //console.log("parse :",bff)
         mng.collection.data=JSON.parse(bff);
+
         mng.collection_loaded=true;
         //console.log("Loaded media:",mng.collection.data.media);
       });
@@ -316,20 +318,80 @@ update_collection_root: function(lnk){
 update_collection_metadata: function(){
   var mng = this.collection.manage;
   return new Promise(function(resolve, reject) {
-    mng.collection.data.history=this.collection_root_hash;
-    var meta=new Buffer(JSON.stringify(mng.collection.data));
-    ipfs.add(meta,function(e,r){
+    var interv = setInterval(function () {
+      //console.log("RNNING:",global.imports_running)
+      if(global.folderbuilding_running <= 0){
+        //console.log("REMVV!?");
+          
+        mng.collection.data.history=this.collection_root_hash;
+        var meta=new Buffer(JSON.stringify(mng.collection.data));
+        ipfs.add(meta,function(e,r){
 
-      //console.log(e);
-      console.log("collection meta added: ",r[0].Hash);
-      //mng.update_collection_root({Name:".collection.json",Hash:r[0].Hash});
-      resolve({Name:".collection.json",Hash:r[0].Hash});
-    })
+          //console.log(e);
+          console.log("collection meta added: ",r[0].Hash);
+          //console.log(mng.collection.data.meta_pin);
+          var collmeta_hash=r[0].Hash;
+          resolve({Name:".collection.json",Hash:collmeta_hash});
+          
+        })
+
+        clearInterval(interv);
+      }
+    },100);
+
   });
 },
 
+
+pin_collection_metadata: function(){
+  console.log("in clsmet")
+  var mng = this.collection.manage;
+  return new Promise(function(resolve, reject) {
+    console.log("inprms")
+    var plist=[];
+    //add all media folders
+    mng.collection.data.media.forEach(function(x){plist.push(x.folder_hash)});
+    console.log("inprms11")
+    //add media meta
+    mng.collection.data.media.forEach(function(x){plist.push(x.folder_hash + "/.media.json")});
+    console.log("inprms22")
+    // add folder structure
+    mng.collection.data.meta_pin.forEach(function(x){plist.push(x)});
+    console.log("inprms33")
+
+    console.log("META PIN COUNT:",plist.length);
+
+    var prms=[];
+    var pcnt=0;
+    plist.forEach(function(x){
+      prms.push(ipfs.pin.add(x,{ recursive: false }));
+      pcnt++;
+    });
+
+    prms.forEach(function(p){
+      Promise.resolve(p).then(function(r){
+        console.log("PiNNED: ", r.Pins[0]);
+        pcnt--;
+        if(pcnt==0)resolve();
+
+
+      }).catch(function(r){
+        console.log("PiN FAIL: ", r);
+        pcnt--;
+        if(pcnt==0)resolve();
+
+
+
+      });
+    });
+
+
+  });
+},
+
+
 // OBSOLETE
-update_collection_meta: function(){
+/*update_collection_meta: function(){
   this.collection.data.history=this.collection_root_hash;
   var meta=new Buffer(JSON.stringify(this.collection.data));
   var mng = this.collection.manage;
@@ -339,12 +401,14 @@ update_collection_meta: function(){
     mng.update_collection_root({Name:".collection.json",Hash:r[0].Hash});
   })
 
-},
+},*/
 
 
 // Step 3 update (recreate) bttm to top
 update_collection: function(){
   var mng = this.collection.manage;
+  //console.log(mng.data)
+  mng.collection.data.meta_pin=[];
   return new Promise(function(resolve, reject) {
     var prms=[
       mng.update_media_all_folders(),
@@ -372,6 +436,7 @@ update_collection: function(){
 },
 
 update_media_all_folders: function(){
+  global.folderbuilding_running++;
   var mng = this.collection.manage;
   var mfolders = this.collection.data.media;
   return new Promise(function(resolve, reject) {
@@ -391,6 +456,8 @@ update_media_all_folders: function(){
 
     ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
           var hash=r.Hash;
+          mng.collection.data.meta_pin.push(hash);
+          global.folderbuilding_running--;
           resolve({Name:"all",Hash:hash});
           //mng.update_collection_root({Name:"all",Hash:hash});
           console.log("all folder created: ",hash);
@@ -401,6 +468,7 @@ update_media_all_folders: function(){
 },
 
 update_media_date_folders: function(){
+  global.folderbuilding_running++;
   var mng = this.collection.manage;
   return new Promise(function(resolve, reject) {
     var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -440,18 +508,6 @@ update_media_date_folders: function(){
         }
       }
     }
-    /*Promise.all(sz_prms).then(function(rs){
-      var cnt=0;
-      for(y in yfolders){
-        for(i in yfolders[y].folders){
-          if(yfolders[y].folders[i]!=null){
-            for(l in yfolders[y].folders[i].Links){
-              yfolders[y].folders[i].Links[l].Size=rs[cnt].CumulativeSize;
-              cnt++
-            }
-          }
-        }
-      } */
 
     // create all month folders
     var mf_prms=[];
@@ -480,6 +536,7 @@ update_media_date_folders: function(){
             Hash: rs[cnt].Hash,
             Size: sz
           });
+          mng.collection.data.meta_pin.push(rs[cnt].Hash);
           cnt++;
         }
       }
@@ -504,11 +561,12 @@ update_media_date_folders: function(){
           Hash: rs[y].Hash,
           Size: sz
         });
+        mng.collection.data.meta_pin.push(rs[y].Hash);
       }
 
       ipfs.object.put(new Buffer(JSON.stringify(topfolder)),'json',function(e,r){
         var hash=r.Hash;
-
+        global.folderbuilding_running--;
         console.log("by date folder created: ",r.Hash);
         resolve({Name:"by date",Hash:hash});
 
@@ -543,6 +601,7 @@ update_media_date_folders: function(){
 },
 
 update_media_category_folders: function(){
+  global.folderbuilding_running++;
   var mng = this.collection.manage;
   return new Promise(function(resolve, reject) {
     var cats=mng.collection.data.categories;
@@ -609,6 +668,7 @@ update_media_category_folders: function(){
             Name: folders[f].cat,
             Hash: r[f].Hash,
             Size:rs[f].CumulativeSize});
+            mng.collection.data.meta_pin.push(r[f].Hash);
           //console.log("Entry: ",folders[f].cat,rs[f].CumulativeSize)
         }
         //console.log("by show subs : ",folder);
@@ -616,6 +676,8 @@ update_media_category_folders: function(){
         ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
           var hash=r.Hash;
           console.log("by show subs created: ",hash);
+          mng.collection.data.meta_pin.push(hash);
+          global.folderbuilding_running--;
           resolve({Name:"by show",Hash:hash});
 
         });

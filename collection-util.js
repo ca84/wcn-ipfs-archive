@@ -429,18 +429,18 @@ update_media_date_folders: function(){
       yfolders.push({year:years[y],folders:mfolders})
     }
 
-    var sz_prms=[];
     // get size for all media folders
     for(y in yfolders){
       for(i in yfolders[y].folders){
         if(yfolders[y].folders[i]!=null){
           for(l in yfolders[y].folders[i].Links){
-            sz_prms.push(ipfs.object.stat(yfolders[y].folders[i].Links[l].Hash));
+            var fh=yfolders[y].folders[i].Links[l].Hash;
+            yfolders[y].folders[i].Links[l].Size = media.filter(function(x){return x.folder_hash==fh})[0].folder_size
           }
         }
       }
     }
-    Promise.all(sz_prms).then(function(rs){
+    /*Promise.all(sz_prms).then(function(rs){
       var cnt=0;
       for(y in yfolders){
         for(i in yfolders[y].folders){
@@ -451,76 +451,76 @@ update_media_date_folders: function(){
             }
           }
         }
-      }
+      } */
 
-      // create all month folders
-      var mf_prms=[];
-      for(y in yfolders){
-        for(i in yfolders[y].folders){
-          if(yfolders[y].folders[i]!=null){
-             mf_prms.push(ipfs.object.put(new Buffer(JSON.stringify(yfolders[y].folders[i])),'json'));
-              
-          }
+    // create all month folders
+    var mf_prms=[];
+    for(y in yfolders){
+      for(i in yfolders[y].folders){
+        if(yfolders[y].folders[i]!=null){
+           mf_prms.push(ipfs.object.put(new Buffer(JSON.stringify(yfolders[y].folders[i])),'json'));
+            
         }
       }
-      Promise.all(mf_prms).then(function(rs){
-      var cnt=0;
-      for(y in yfolders){
-        yfolders[y].folder={Links:[],Data:"\u0008\u0001"};
-        for(i in yfolders[y].folders){
-          var pfx="";if(i<9)pfx="0";
-          if(yfolders[y].folders[i]!=null){
-            var sz=0;
-            for(l in yfolders[y].folders[i].Links){
-              sz=sz+yfolders[y].folders[i].Links[l].Size;
-            }
-
-            yfolders[y].folder.Links.push({
-              Name: pfx + (parseInt(i)+1) + " " + monthNames[i],
-              Hash: rs[cnt].Hash,
-              Size: sz
-            });
-            cnt++;
-          }
-        }
-      }
-
-      //create year folder
-      y_prms=[];
-      for(y in yfolders){
-        y_prms.push(ipfs.object.put(new Buffer(JSON.stringify(yfolders[y].folder)),'json'));
-        
-      }
-      Promise.all(y_prms).then(function(rs){
-        var topfolder={Links:[],Data:"\u0008\u0001"};
-
-        for(y in yfolders){
+    }
+    Promise.all(mf_prms).then(function(rs){
+    var cnt=0;
+    for(y in yfolders){
+      yfolders[y].folder={Links:[],Data:"\u0008\u0001"};
+      for(i in yfolders[y].folders){
+        var pfx="";if(i<9)pfx="0";
+        if(yfolders[y].folders[i]!=null){
           var sz=0;
-          for(l in yfolders[y].folder.Links){
-            sz=sz+yfolders[y].folder.Links[l].Size;
+          for(l in yfolders[y].folders[i].Links){
+            sz=sz+yfolders[y].folders[i].Links[l].Size;
           }
-          topfolder.Links.push({
-            Name: years[y] + "",
-            Hash: rs[y].Hash,
+
+          yfolders[y].folder.Links.push({
+            Name: pfx + (parseInt(i)+1) + " " + monthNames[i],
+            Hash: rs[cnt].Hash,
             Size: sz
           });
+          cnt++;
         }
+      }
+    }
 
-        ipfs.object.put(new Buffer(JSON.stringify(topfolder)),'json',function(e,r){
-          var hash=r.Hash;
+    //create year folder
+    y_prms=[];
+    for(y in yfolders){
+      y_prms.push(ipfs.object.put(new Buffer(JSON.stringify(yfolders[y].folder)),'json'));
+      
+    }
+    Promise.all(y_prms).then(function(rs){
+      var topfolder={Links:[],Data:"\u0008\u0001"};
 
-          console.log("by date folder created: ",r.Hash);
-          resolve({Name:"by date",Hash:hash});
-
+      for(y in yfolders){
+        var sz=0;
+        for(l in yfolders[y].folder.Links){
+          sz=sz+yfolders[y].folder.Links[l].Size;
+        }
+        topfolder.Links.push({
+          Name: years[y] + "",
+          Hash: rs[y].Hash,
+          Size: sz
         });
+      }
 
+      ipfs.object.put(new Buffer(JSON.stringify(topfolder)),'json',function(e,r){
+        var hash=r.Hash;
+
+        console.log("by date folder created: ",r.Hash);
+        resolve({Name:"by date",Hash:hash});
 
       });
 
-      }); 
+
+    });
+
+    }); 
       
 //    console.log(JSON.stringify(yfolders,null,1));      
-    });
+    //});
 
 
 
@@ -547,85 +547,86 @@ update_media_category_folders: function(){
   return new Promise(function(resolve, reject) {
     var cats=mng.collection.data.categories;
     var media=mng.collection.data.media;
-    var prms=[];
+    //var prms=[];
     var folders=[];
 
     // get size for all media folders
-    for(i in media){
-      prms.push(ipfs.object.stat(media[i].folder_hash));
-    }
-    Promise.all(prms).then(function(r){
+    //for(i in media){
+      //prms.push(ipfs.object.stat(media[i].folder_hash));
+    //}
+    //Promise.all(prms).then(function(r){
       //console.log(r[1])
 
-      // finde EPs for all categories
-      for(c in cats){
-        var folder={Links:[],Data:"\u0008\u0001"};
-        if(cats[c].ep_count>0){
-          for(m in media){
-            if(media[m].category==cats[c].short){
-              folder.Links.push({
-                Name: media[m].title,
-                Hash: media[m].folder_hash,
-                Size:r[m].CumulativeSize
-              });
-            }
-          }
-          //if(folder.Links.length>0)
-          folders.push({cat:cats[c].title,fld:folder});
-        }
-      }
-      // add misc
+    // finde EPs for all categories
+    for(c in cats){
       var folder={Links:[],Data:"\u0008\u0001"};
-      for(m in media){
-        if(media[m].category.toLowerCase()=="misc"){
-          folder.Links.push({
-            Name: media[m].title,
-            Hash: media[m].folder_hash,
-            Size:r[m].CumulativeSize
-          });
-        }
-      }
-      if(folder.Links.length>0)folders.push({cat:"Misc",fld:folder});
-
-      // create show folders on IPFS
-      var cfpms=[];
-      for(f in folders){
-        cfpms.push(ipfs.object.put(new Buffer(JSON.stringify(folders[f].fld)),'json'));
-
-      }
-      Promise.all(cfpms).then(function(r){
-        var sz_prms=[];
-        // get size for all show folders
-        for(i in r){
-          sz_prms.push(ipfs.object.stat(r[i].Hash));
-        }
-        Promise.all(sz_prms).then(function(rs){
-
-          // create "by show" folder
-          var folder={Links:[],Data:"\u0008\u0001"};
-          for(f in folders){
+      if(cats[c].ep_count>0){
+        for(m in media){
+          if(media[m].category==cats[c].short){
             folder.Links.push({
-              Name: folders[f].cat,
-              Hash: r[f].Hash,
-              Size:rs[f].CumulativeSize});
-            //console.log("Entry: ",folders[f].cat,rs[f].CumulativeSize)
+              Name: media[m].title,
+              Hash: media[m].folder_hash,
+              Size: media[m].folder_size
+              //Size:r[m].CumulativeSize
+            });
           }
-          //console.log("by show subs : ",folder);
+        }
+        //if(folder.Links.length>0)
+        folders.push({cat:cats[c].title,fld:folder});
+      }
+    }
+    // add misc
+    var folder={Links:[],Data:"\u0008\u0001"};
+    for(m in media){
+      if(media[m].category.toLowerCase()=="misc"){
+        folder.Links.push({
+          Name: media[m].title,
+          Hash: media[m].folder_hash,
+          Size: media[m].folder_size
+        });
+      }
+    }
+    if(folder.Links.length>0)folders.push({cat:"Misc",fld:folder});
 
-          ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
-            var hash=r.Hash;
-            console.log("by show subs created: ",hash);
-            resolve({Name:"by show",Hash:hash});
+    // create show folders on IPFS
+    var cfpms=[];
+    for(f in folders){
+      cfpms.push(ipfs.object.put(new Buffer(JSON.stringify(folders[f].fld)),'json'));
 
-          });
+    }
+    Promise.all(cfpms).then(function(r){
+      var sz_prms=[];
+      // get size for all show folders
+      for(i in r){
+        sz_prms.push(ipfs.object.stat(r[i].Hash));
+      }
+      Promise.all(sz_prms).then(function(rs){
 
-        });      
+        // create "by show" folder
+        var folder={Links:[],Data:"\u0008\u0001"};
+        for(f in folders){
+          folder.Links.push({
+            Name: folders[f].cat,
+            Hash: r[f].Hash,
+            Size:rs[f].CumulativeSize});
+          //console.log("Entry: ",folders[f].cat,rs[f].CumulativeSize)
+        }
+        //console.log("by show subs : ",folder);
+
+        ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
+          var hash=r.Hash;
+          console.log("by show subs created: ",hash);
+          resolve({Name:"by show",Hash:hash});
+
+        });
+
+      });      
 
 
-      });
+    });
 
 
-    });  
+    //});  
   });  
   
 },

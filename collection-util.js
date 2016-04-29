@@ -28,6 +28,7 @@ var ipfs = ipfsAPI(ipfs_node.connection_data);
 
 global.imports_running=0;
 global.imports_max_paralell=2;
+global.fcrcnt=0;
 
 var _root_folder={Links:[],Data:"\u0008\u0001"};
 var _app_folder_hash="";
@@ -375,29 +376,25 @@ update_media_all_folders: function(){
   var mfolders = this.collection.data.media;
   return new Promise(function(resolve, reject) {
     var folder={Links:[],Data:"\u0008\u0001"};
-    var prms=[];
+    //var prms=[];
+
 
     for(var i=0;i<mfolders.length;i++){
       var mf=mfolders[i];
-      prms.push(ipfs.object.stat(mf.folder_hash));
-    }
-
-    Promise.all(prms).then(function(r){
-        for(var j=0;j<r.length;j++){
-        var mf=mfolders[j];
-          folder.Links.push({
+      folder.Links.push({
             Name: mf.title,
             Hash: mf.folder_hash,
-            Size:r[j].CumulativeSize
-          });
-        }
-        ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
+            Size: mf.folder_size
+      });
+      //prms.push(ipfs.object.stat(mf.folder_hash));
+    }
+
+    ipfs.object.put(new Buffer(JSON.stringify(folder)),'json',function(e,r){
           var hash=r.Hash;
           resolve({Name:"all",Hash:hash});
           //mng.update_collection_root({Name:"all",Hash:hash});
           console.log("all folder created: ",hash);
         });
-      });
     
   });
   
@@ -654,8 +651,9 @@ recreate_all_media_folder: function(){
       console.log("pprms:", md);
       prms.push(mng.recreate_media_folder(md,{}))
     });
-    console.log(prms)
+    //console.log(prms)
     Promise.all(prms).then(function(r){
+      console.log("FOLDER CREATION DONE");
       rslv();
     });
 
@@ -682,12 +680,15 @@ recreate_media_folder: function(m,new_meta){
       
       }).catch(function(e){console.log("ERR:", e)});
     });
-    interv = setInterval(function () {
+    var interv = setInterval(function () {
+      //console.log("RNNING:",global.imports_running)
       if(global.imports_running <= 0){
+        //console.log("REMVV!?");
         clearInterval(interv);
         reslv();
       }
-    },100);    
+    },100);
+    //reslv(); 
 
   });
 },
@@ -695,8 +696,8 @@ recreate_media_folder: function(m,new_meta){
 
 // Step 3 create folder for media+meta
 create_media_folder: function(file_hash,fname,fext,meta_hash,mname,meta,poster_hash){
-  
-  console.log("Create media folder for:     ",fname);
+  global.fcrcnt++;
+  console.log("Create media folder for:     ",global.fcrcnt,global.imports_running,fname);
   var nono=["/","#","?","|",":"];
   var pp=fname;
   for(var i=0;i<nono.length;i++){pp=pp.split(nono[i]).join(" ");}

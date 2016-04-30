@@ -43,8 +43,10 @@ function build_root(mhash,p){
   _collections.forEach(function(c){
     rf.Links.push({Name:c.data.name, Hash:c.manage.collection_root_hash});
   });
+
+  console.log("put root folder" + JSON.stringify(rf));
   return ipfs.object.put(new Buffer(JSON.stringify(rf)),'json').chain(function(r){
-      //console.log("NEW ROOT: ", r.Hash);
+      console.log("NEW ROOT: ", r.Hash);
       if(pub)return ipfs.name.publish(r.Hash)
   }).catch(function(e){console.log("UPD RT ERR: ", e, rf)});
 }

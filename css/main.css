@@ -17,6 +17,10 @@ h2 {
 
 a{
     text-decoration: none;
+    color: black;
+}
+a:hover{
+    color: rgba(9, 103, 130, 0.62);
 }
 
 p{
@@ -48,7 +52,7 @@ pre{
     margin-top: 14px;
     padding-bottom: 15px;
     padding-top: 15px;
-    padding: 25px 35px 25px 25px;
+    padding: 12px 5px 25px 15px;
     position: relative;
     line-height: 20px;
     min-height: 40px;
@@ -204,18 +208,39 @@ pre{
 .resut_list_entry{
     display: inline-flex;
     margin: 8px;
+    padding: 6px 10px;
+    background-color: rgba(13, 29, 202, 0.1);
 }
 
 .resut_list_entry_text{
     padding: 4px 16px;
-    width: 550px;
+    width: 42em;
     display: inline;
 }
 
+p.resut_list_entrytext{
+    overflow-y: hidden;
+    height: 40;
+}
+
+.resut_list_entry_thumb{
+    width: 178px;
+    height: 100px;
+    background-image: url(../images/thumb.png);
+    background-size: contain;
+}
 .resut_list_entry_date{
     display: inline-block;
     align-self: flex-end;
+    font-size: 0.8rem;
+    float: right;
 }
+
+span.resut_list_entry_footer {
+    padding: 4 10;
+    background-color: rgba(13, 51, 104, 0.23);
+}
+
 .cont_row_slot{
     padding: 7px;
 }

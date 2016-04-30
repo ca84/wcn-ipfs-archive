@@ -109,11 +109,16 @@
 				<h3 class="cont_row_label ovr">{{list_title}}</h3>
 				{{#video}}
 				<div class="resut_list_entry"><a href="#/play/{{hash}}">
-					<img height="100" src="/ipfs/{{hash}}/poster.jpg"></a>
+					<img class="resut_list_entry_thumb" src="/ipfs/{{hash}}/poster.jpg"></a>
 					<div class="resut_list_entry_text"><h2><a href="#/info/{{hash}}">{{title}}</a></h2>
-						<p>{{video_file}}</p>
+						<p class="resut_list_entrytext">{{video_file}}</p>
 						<p>{{youtube_meta}}</p>
-						<div class="resut_list_entry_date">{{formatDate date}}</div>
+						<div class="resut_list_entry_date">
+  							<span class="resut_list_entry_footer"><a href="/ipfs/{{video_file}}" title="Download Mediafile"><i class="fa fa-file-video-o" aria-hidden="true"></i></a></span>
+  							<span class="resut_list_entry_footer"><a href="/ipfs/{{hash}}" target="_blank" title="Show IPFS Folder"><i class="fa fa-folder-o" aria-hidden="true"></i></a></span>
+  							<span class="resut_list_entry_footer"><a href="#" title="Pin on local IPFS Node"><i class="fa fa-map-pin" aria-hidden="true"></i></a></span>
+  							<span class="resut_list_entry_footer">{{formatDate date}}</span>
+						</div>
 					</div>
 
 				</div>

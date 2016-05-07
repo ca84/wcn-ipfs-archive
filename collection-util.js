@@ -365,27 +365,39 @@ pin_collection_metadata: function(){
 
     var prms=[];
     var pcnt=0;
+    var pocnt=0;
     plist.forEach(function(x){
       prms.push(ipfs.pin.add(x,{ recursive: false }));
       pcnt++;
     });
 
-    prms.forEach(function(p){
+    var interv = setInterval(function () {
+    if(prms.length == 0){
+      clearInterval(interv);
+    }
+
+    if(pocnt < 10){
+      var p=prms.pop()
+      console.log("REMAINING: ",prms.length);
+      pocnt++;
+    
       Promise.resolve(p).then(function(r){
         console.log("PiNNED: ", r.Pins[0]);
         pcnt--;
+        pocnt--;
         if(pcnt==0)resolve();
-
 
       }).catch(function(r){
-        console.log("PiN FAIL: ", r);
-        pcnt--;
-        if(pcnt==0)resolve();
-
-
+          console.log("PiN FAIL: ", r);
+          pcnt--;
+          pocnt--;
+          if(pcnt==0)resolve();
 
       });
-    });
+    
+    }
+},100);
+
 
 
   });

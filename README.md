@@ -2,52 +2,58 @@
 
 This is a early PoC hack of a completely decentralized content archiving and display solution developed for [World Crypto Network](http://www.worldcryptonetwork.com) based on the [IPFS Project](https://github.com/ipfs/go-ipfs) written in Node.
 
-Main focus for now is to have a efficient way of building and maintaining a browse and watchable archive of all video content produced by WCN contributers (other types of content like audio or git repos may follow later). A additionally early target is making it really easy for supporters to help host/pin selected parts or the entire archive.
+Main focus for now is to have a efficient way of building and maintaining a browse and watchable archive of all video content produced by WCN contributers. A additionally major target is making it really easy for supporters to help host/pin selected parts or the entire archive.
 
 
 ## View Archive / IPFS deployments
 The latest "stable" version will always be deployed to **/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja**
 
 - with a local IPFS node running, go to http://localhost:8080/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja
-- without local node you can go to https://ipfs.io/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja or https://ipfs.raincloud.ch/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja
+- without local node you can go to https://ipfs.raincloud.ch/ipns/QmWCNyBxJS9iuwCrnnA3QfcrS9Yb67WXnZTiXZsMDFj2ja
 
-This gives you a brows-able folder structure of the archive (as provided by the default IPFS daemon). For a graphic presentation open the top-level folder "/app" which will start the archive-browser app.
+This gives you a brows-able folder structure of the archive (as provided by the default IPFS daemon). **To enter the the user interface, open the top-level folder "/app" which will start the archive-browser app.**
 
 
-*Just for fun I try to not start over with the data-archive itself, as I built in a history reference that points to the last state and it would be nice to see the archives history going back to the early development stage.*
+### Current state of collection
+
+The Archive now contains 679 WCN videos from 2014-01 to 2015-11. These are the videos that were already downloaded and prepared for seeding with torrent.
+
+In the next steps of development I'm going to integrate the download and prepare steps into the collcli.js CLI to fetch and import the remaining shows. This can later be used to have shows fetched and published on IPFS automatically as they are released on Youtube.
 
 ### Addidtional Addresses
 For development and for loading the archive I use different IPNS addresse and publish them to the main address above whenever there has been usefull progress.
 
 - **/ipns/QmY1XYR9PhF5XzveWiAqjPfNN5tEo1gd12zRYHuu5kMosE** Browser App Development
 - **/ipns/QmS9mdKAihQaqGuLgzAESCSbFDCpoRVFqQinua6Ve7ARCH** Archive Loading
-- Archive Node1 **/ipns/QmX3LsxW69VHea43xvfWHVXC5yviHhYSbRjg9acnz5aaN1** (150GB)
-- Archive Node2 **/ipns/Qme3XmB651ZYCkFTYGh69pJkXGQJeWYDateeWnxfAFaaN2** (20GB)
-- Archive Node3 **/ipns/QmVfwJUWnj7GAkQtV4cDVrNDnZEwi4oxnyZaJc7xY7zaN3** (empty)
+- Archive Node1 **/ipns/QmX3LsxW69VHea43xvfWHVXC5yviHhYSbRjg9acnz5aaN1** 201401 - 201407 (156GB)
+- Archive Node2 **/ipns/Qme3XmB651ZYCkFTYGh69pJkXGQJeWYDateeWnxfAFaaN2** 201408 - 201412 (236GB)
+- Archive Node3 **/ipns/QmVfwJUWnj7GAkQtV4cDVrNDnZEwi4oxnyZaJc7xY7zaN3** 201501 - 201512 (95G)
 - Archive Node4 **/ipns/QmS1HnL1cqXzzH53cpVavpjEEVLDEgeKBP5QLHN9nPxaN4** (empty)
 
-### Current state of collection
 
-The Archive works up to about 200 WCN videos for now (2014-01 - 2014-07), after that I start to face bad response times and other strage exceptions with a single IPFS node (starting at +150GB).
+### Hosting and technical Operation
 
-To mitigate that I started to split the collection over multible nodes, which basically works so far, but there are still issues with importing more videos.
+Although decentralization is one of the major goals here, for now all the IPFS nodes involved are run by one party.
 
-So far the my conclusion is, that getting the media folder sitze of each item via ipfs.stat after a import run, seems to cause the issue. Therefore I now starting to remodel the code to keep the folder sizes in the metadata, so that not each media folder has to be touched while finalizing a import run. *Partialy implemented* 
-
+If you are interested in the technical deployment itself check the stuff in [deployment](tree/master/deployment).
 
 ## Current State of Development
 Here a brief overview what "it" does so far:
 
-- main library collection-util.js:
+- Main Library *collection-util.js*:
   - Adding Videos with meta and poster.jpg
   - dynamic building of IPFS folder structures (all, by show, by date)
   - generate and store JSON files with meta for gateway-mode
   - deploy the browser app to IPFS 
   - update meta data
-  - recreate media folder (with size in meta or other meta changes) 
-- CLI fronted (only usable with understnading of the code)
+  - recreate media folder (with size in meta or other meta changes)
+  - meta-pinning, pin all folder structure and json files but no content
+- CLI fronted (only usable with understanding of the code)
 - Video-Collection Browser App
   - browser app detects and switches between [full-mode and gateway-mode](#full-mode-vs-gateway-mode)
+  - front page with this README.md and available collections
+  - list view and detail view with player of videos collections
+  - show/category tag navigation (please check [static_meta](tree/master/static_meta) for adding missing shows)
 - multi-collections structure in place (not practically tested yet)
 - tested with current versions of FireFox/Iceweasel and Chrome (IE probably broken)
 
@@ -93,6 +99,8 @@ The WNC videos are downloaded directly from Youtube with [youtube-dl](https://gi
 	youtube-dl -i -f best -o '%(upload_date)s %(title)s/%(title)s-%(id)s.%(ext)s' --write-info-json --write-description https://www.youtube.com/watch?v=$yid > /dev/null 2> /dev/null
 
 The "poster.jpg" (referenced in the meta) is downloaded as well and put in the videos folder (not done by youtube-dl).
+
+*This will be integrated in to the collection manger within the next steps of the development*
 
 ### Connect to remote node
 For connecting to a remote IPFS node the connection URL have to be set in the environment variable IPFS_API_URL:
@@ -150,6 +158,8 @@ As this is pretty raw PoC it is probably no fun to contribute right now (to much
 Some of the next targets with this project are:
 
 - host/pin management in the browser app
+- download from youtube and prepare with collcli.js
+- Automatic fetch possibly with slack hook
 - Add, Change and Upload content via browser app (only for full-mode)
 - clean multi-party publishing - depending on IPFS feature: "Publish an ipfs-path to another public key *(not implemented)*"
 - de-brand, make the tool more generic and customizable for non-WCN archives (basically any Youtube channels could use this code base to bring there uploads to IPFS if the tool proves as use full)

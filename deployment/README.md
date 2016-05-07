@@ -15,8 +15,9 @@ If your interested in building your own CoreOS cluster, maybe check out my 3 par
 
 There are basically two container images involved runing this infrastructure:
 
- - Dockerfile - A basic IPFS node
- - ../Dockerfile - A container with the nodejs tools of this project 
+ - ipfs-node/Dockerfile - A basic dockerized IPFS node
+ - <repo-root>/Dockerfile - A container with the nodejs tools of this project
+ - youtube-fetch/Dockerfile - 
 
 *The Dockerfiles can probably be used in any docker-friendly environment, only the next sections need the CoreOS environment*
 

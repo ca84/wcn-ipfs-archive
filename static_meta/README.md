@@ -8,7 +8,7 @@ The assignement of media items to categories is done very simpel and might have 
 
 Media items are asociated with the categories if one of the search-strings has a partial case-insensitiv match in the media items title.
 
-Everyone is welcome to contribut add for example missing shows to the *categories_wcnshows.json*, but please test your search-strings first with the avalible test data.
+Everyone is welcome to contribut add for example missing shows to the *categories_wcnshows.json* via pull request, but please test your search-strings first with the avalible test data.
 
 For example like that:
 
